@@ -13,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 
 interface Registration {
   id: string;
@@ -142,17 +141,6 @@ export default function Home() {
     });
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <Badge variant="success">Disetujui</Badge>;
-      case "rejected":
-        return <Badge variant="destructive">Ditolak</Badge>;
-      default:
-        return <Badge variant="warning">Pending</Badge>;
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
@@ -235,9 +223,6 @@ export default function Home() {
                       Program Studi
                     </TableHead>
                     <TableHead className="h-14 px-6 font-semibold text-slate-700">
-                      Status
-                    </TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-slate-700">
                       Tanggal Daftar
                     </TableHead>
                     <TableHead className="h-14 px-6 text-center font-semibold text-slate-700">
@@ -274,9 +259,6 @@ export default function Home() {
                       </TableCell>
                       <TableCell className="p-6 text-slate-600">
                         {registration.programStudi}
-                      </TableCell>
-                      <TableCell className="p-6">
-                        {getStatusBadge(registration.status)}
                       </TableCell>
                       <TableCell className="p-6 text-slate-600">
                         {formatDate(registration.createdAt)}
