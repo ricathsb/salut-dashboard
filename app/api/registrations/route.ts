@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 // GET all registrations
@@ -18,25 +18,30 @@ export async function GET() {
 }
 
 // DELETE a registration by ID
-export async function DELETE(request: Request) {
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json({ error: "Missing ID in query" }, { status: 400 });
+  }
+
   try {
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get("id")
-
-    if (!id) {
-      return NextResponse.json({ error: "ID is required" }, { status: 400 })
-    }
-
-    await prisma.pendaftaran.delete({
+    const deleted = await prisma.pendaftaran.delete({
       where: { id },
-    })
+    });
 
-    return NextResponse.json({
-      success: true,
-      message: `Registration ${id} deleted successfully`,
-    })
-  } catch (error) {
-    console.error("Error deleting registration:", error)
-    return NextResponse.json({ error: "Failed to delete registration" }, { status: 500 })
+    return NextResponse.json(
+      { message: `Registration with ID ${id} deleted successfully.` },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("❌ Failed to delete:", error);
+
+    return NextResponse.json(
+      { error: "Failed to delete registration. It may not exist." },
+      { status: 500 }
+    );
   }
 }
+

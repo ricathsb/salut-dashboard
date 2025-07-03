@@ -11,8 +11,11 @@
   "dependencies": {
     "@prisma/client": "^6.10.1",
     "@radix-ui/react-slot": "^1.2.3",
+    "adm-zip": "^0.5.16",
+    "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.7.0",
+    "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
     "lucide-react": "^0.525.0",
     "next": "15.3.4",
@@ -24,13 +27,15 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/adm-zip": "^0.5.7",
+    "@types/node": "^20.19.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "prisma": "^6.10.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }

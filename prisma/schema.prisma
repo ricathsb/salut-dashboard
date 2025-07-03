@@ -8,20 +8,27 @@ datasource db {
 }
 
 model Pendaftaran {
-  id           String   @id @default(uuid())
-  namaLengkap  String
-  nik          String   @unique
-  nisn         String   @unique
-  noHp         String
-  email        String   @unique
-  tanggalLahir DateTime
-  alamat       String
-  fakultas     String
-  programStudi String
-  dokumenPath  String?
-  status       String   @default("pending")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                String   @id @default(uuid())
+  namaLengkap       String
+  nik               String   @unique
+  nisn              String?  @unique
+  noHp              String
+  email             String   @unique
+  tanggalLahir      DateTime
+  alamat            String
+  fakultas          String
+  programStudi      String
+  jalur             String
+  pasFoto           String?
+  ktp               String?
+  ijazah            String?
+  formulir          String?
+  ijazahSMA         String?
+  screenshotPDDIKTI String?
+  skPengangkatan    String?
+  skMengajar        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@map("pendaftaran")
 }
@@ -59,4 +66,43 @@ model program_studi {
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime
+}
+
+model audit_log {
+  id        String   @id
+  action    String
+  table     String
+  recordId  String
+  oldData   Json?
+  newData   Json?
+  userId    String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model dokumen_pendaftaran {
+  id                String   @id
+  pendaftaranId     String
+  namaFile          String
+  jenisFile         String
+  urlCloudinary     String
+  publicId          String
+  ukuranFile        Int
+  tipeFile          String
+  statusVerifikasi  String   @default("pending")
+  catatanVerifikasi String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+}
+
+model validasi_data {
+  id        String   @id
+  field     String
+  value     String
+  isValid   Boolean
+  message   String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
 }
