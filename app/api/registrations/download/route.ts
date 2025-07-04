@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { cloudinary } from "@/lib/cloudinary"
 import ExcelJS from "exceljs"
 import AdmZip from "adm-zip"
 import axios from "axios"
+import { Buffer } from "node:buffer"
 
 export async function GET(request: Request) {
   try {
@@ -24,54 +25,48 @@ export async function GET(request: Request) {
     const slugName = slugify(registration.namaLengkap)
 
     // 📷 Tambahkan pasFoto (JPG)
-    try {
-      const pasFotoUrl = registration.pasFoto
+    const pasFotoUrl = registration.pasFoto
+    if (pasFotoUrl) {
+      try {
+        const pasFotoRes = await axios.get(pasFotoUrl, {
+          responseType: "arraybuffer",
+        })
 
-      console.log("📷 Downloading pasFoto:", pasFotoUrl)
-
-      const pasFotoRes = await axios.get(pasFotoUrl, {
-        responseType: "arraybuffer",
-      })
-
-      const filename = `${slugName}_pasfoto.jpg`
-      zip.addFile(filename, Buffer.from(pasFotoRes.data))
-    } catch (err: any) {
-      console.warn("⚠️ Gagal download pasFoto:", err?.message || err)
+        const filename = `${slugName}_pasfoto.jpg`
+        zip.addFile(filename, Buffer.from(pasFotoRes.data))
+      } catch (err: any) {
+        console.warn("⚠️ Gagal download pasFoto:", err?.message || err)
+      }
     }
 
-    // 📄 Tambahkan file PDF (ktp, ijazah, formulir)
+    // 📄 Tambahkan file PDF (ktp, ijazah, formulir, dll)
     const pdfFiles = [
-  { id: registration.ktp, label: "ktp" },
-  { id: registration.ijazah, label: "ijazah" },
-  { id: registration.formulir, label: "formulir" },
-  { id: registration.ijazahSMA, label: "ijazahSMA" },
-  { id: registration.screenshotPDDIKTI, label: "screenshotPDDIKTI" },
-  { id: registration.skPengangkatan, label: "skPengangkatan" },
-  { id: registration.skMengajar, label: "skMengajar" },
-];
+      { id: registration.ktp, label: "ktp" },
+      { id: registration.ijazah, label: "ijazah" },
+      { id: registration.formulir, label: "formulir" },
+      { id: registration.ijazahSMA, label: "ijazahSMA" },
+      { id: registration.screenshotPDDIKTI, label: "screenshotPDDIKTI" },
+      { id: registration.skPengangkatan, label: "skPengangkatan" },
+      { id: registration.skMengajar, label: "skMengajar" },
+    ]
 
-for (const { id, label } of pdfFiles) {
-  if (!id) continue;
+    for (const { id: fileUrl, label } of pdfFiles) {
+      if (!fileUrl) continue
 
-  try {
-    const pdfUrl = id; // ✅ langsung pakai URL dari database
+      try {
+        const pdfRes = await axios.get(fileUrl, {
+          responseType: "arraybuffer",
+          headers: {
+            Accept: "application/pdf",
+          },
+        })
 
-    console.log(`📄 Downloading ${label}: ${pdfUrl}`);
-
-    const pdfRes = await axios.get(pdfUrl, {
-      responseType: "arraybuffer",
-      headers: {
-        Accept: "application/pdf",
-      },
-    });
-
-    const filename = `${slugName}_${label}.pdf`;
-    zip.addFile(filename, Buffer.from(pdfRes.data));
-  } catch (err: any) {
-    console.warn(`⚠️ Gagal download file ${label}:`, err?.message || err);
-  }
-}
-
+        const filename = `${slugName}_${label}.pdf`
+        zip.addFile(filename, Buffer.from(pdfRes.data))
+      } catch (err: any) {
+        console.warn(`⚠️ Gagal download file ${label}:`, err?.message || err)
+      }
+    }
 
     // 📊 Tambahkan Excel ringkasan
     const workbook = new ExcelJS.Workbook()
@@ -105,7 +100,8 @@ for (const { id, label } of pdfFiles) {
       formatDate(registration.createdAt),
     ])
 
-    const excelBuffer = await workbook.xlsx.writeBuffer()
+    const uint8Array = await workbook.xlsx.writeBuffer()
+    const excelBuffer = Buffer.from(uint8Array)
     zip.addFile("data-pendaftaran.xlsx", excelBuffer)
 
     const zipBuffer = zip.toBuffer()
@@ -124,6 +120,7 @@ for (const { id, label } of pdfFiles) {
   }
 }
 
+// Format tanggal menjadi dd/mm/yyyy
 function formatDate(date: Date | null) {
   if (!date) return "-"
   return new Intl.DateTimeFormat("id-ID", {
@@ -133,6 +130,7 @@ function formatDate(date: Date | null) {
   }).format(new Date(date))
 }
 
+// Buat slug dari nama (huruf kecil, tanpa simbol aneh)
 function slugify(text: string) {
   return text
     .toLowerCase()

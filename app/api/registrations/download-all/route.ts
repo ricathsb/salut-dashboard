@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import ExcelJS from "exceljs"
 import AdmZip from "adm-zip"
 import axios from "axios"
+import { Buffer } from 'node:buffer' // pastikan ini ada
+
 
 export async function GET() {
   try {
@@ -85,10 +88,13 @@ export async function GET() {
       }
     }
 
-    const excelBuffer = await workbook.xlsx.writeBuffer()
-    zip.addFile("data-pendaftaran.xlsx", excelBuffer)
+    const uint8Array = await workbook.xlsx.writeBuffer()
+const excelBuffer = Buffer.from(uint8Array)
 
-    const zipBuffer = zip.toBuffer()
+zip.addFile("data-pendaftaran.xlsx", excelBuffer)
+
+const zipBuffer = zip.toBuffer()
+
 
     return new NextResponse(zipBuffer, {
       status: 200,

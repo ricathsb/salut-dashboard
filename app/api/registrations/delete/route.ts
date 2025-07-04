@@ -23,8 +23,11 @@ export async function DELETE(req: NextRequest) {
 
     for (const url of urls) {
       try {
-        const publicId = extractPublicId(url!)
-        const resourceType = url.includes(".pdf") ? "raw" : "image"
+        
+        const safeUrl = url ?? ""
+        const publicId = extractPublicId(safeUrl)
+        const resourceType = safeUrl.includes(".pdf") ? "raw" : "image"
+
 
         await cloudinary.uploader.destroy(publicId, { resource_type: resourceType })
         console.log(`✅ Cloudinary deleted: ${publicId}`)
