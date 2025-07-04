@@ -2,12 +2,20 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Dashboard Registrasi Mahasiswa",
-  description: "Kelola data registrasi mahasiswa dengan mudah",
+  title: "SALUT Dashboard - Sistem Akademik",
+  description: "Sistem Akademik Lengkap untuk Universitas Terbuka",
+  icons: {
+    icon: "/logo.ico",
+    shortcut: "/logo.ico",
+    apple: "/logo.ico",
+  },
 }
 
 export default function RootLayout({
@@ -16,8 +24,30 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="id">
+      <head>
+        <link rel="icon" href="/logo.ico" sizes="any" />
+        <link rel="icon" href="/logo.ico" type="image/x-icon" />
+        <link rel="shortcut icon" href="/logo.ico" />
+      </head>
+      <body className={inter.className}>
+        <SidebarProvider>
+          <div className="sidebar-container">
+            <AppSidebar />
+          </div>
+          <SidebarInset>
+            <header className="flex h-16 shrink-0 items-center gap-3 border-b border-gray-200 px-4 bg-white shadow-sm">
+              <SidebarTrigger className="-ml-1" />
+              <div className="h-4 w-px bg-gray-300" />
+
+
+
+            </header>
+            <main className="flex-1 overflow-auto main-content">{children}</main>
+          </SidebarInset>
+        </SidebarProvider>
+        <Toaster />
+      </body>
     </html>
   )
 }

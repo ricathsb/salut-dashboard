@@ -31,7 +31,7 @@ interface Registration {
   status: "pending" | "approved" | "rejected"
   createdAt: string
   updatedAt: string
-  jalur: string // Ubah menjadi string untuk fleksibilitas
+  jalur: string
 }
 
 export default function Home() {
@@ -52,7 +52,6 @@ export default function Home() {
       const response = await fetch("/api/registrations")
       const data = await response.json()
 
-      // Debug: log semua data jalur untuk melihat nilai sebenarnya
       console.log("=== DEBUG DATA JALUR ===")
       data.forEach((item: Registration, index: number) => {
         console.log(`${index + 1}. ${item.namaLengkap} - Jalur: "${item.jalur}" (type: ${typeof item.jalur})`)
@@ -72,16 +71,13 @@ export default function Home() {
     }
   }
 
-  // Fungsi helper untuk menentukan apakah jalur adalah RPL
   const isRPLJalur = (jalur: string): boolean => {
     const jalurLower = jalur?.toString().trim().toLowerCase() || ""
 
-    // Cek apakah ini Non-RPL dulu
     if (jalurLower.includes("non") && jalurLower.includes("rpl")) {
-      return false // Non-RPL
+      return false
     }
 
-    // Cek apakah ini RPL murni
     return (
       jalurLower === "rpl" ||
       jalurLower === "rekognisi pembelajaran lampau" ||
@@ -89,7 +85,6 @@ export default function Home() {
     )
   }
 
-  // Fungsi helper untuk menentukan apakah jalur adalah Non-RPL
   const isNonRPLJalur = (jalur: string): boolean => {
     const jalurLower = jalur?.toString().trim().toLowerCase() || ""
 
@@ -102,7 +97,6 @@ export default function Home() {
     )
   }
 
-  // Filter dan search data dengan logika yang diperbaiki
   const filteredRegistrations = registrations.filter((registration) => {
     const matchesSearch = registration.namaLengkap.toLowerCase().includes(searchTerm.toLowerCase())
 
@@ -119,7 +113,6 @@ export default function Home() {
   })
 
   const handleDelete = async (id: string) => {
-    // Set loading state untuk ID ini
     setDeletingIds((prev) => new Set(prev).add(id))
 
     try {
@@ -139,7 +132,6 @@ export default function Home() {
         throw new Error(data.error || "Delete failed")
       }
 
-      // Update UI langsung setelah delete berhasil
       setRegistrations((prevRegistrations) => prevRegistrations.filter((registration) => registration.id !== id))
 
       toast({
@@ -154,7 +146,6 @@ export default function Home() {
         variant: "destructive",
       })
     } finally {
-      // Clear loading state untuk ID ini
       setDeletingIds((prev) => {
         const newSet = new Set(prev)
         newSet.delete(id)
@@ -164,18 +155,16 @@ export default function Home() {
   }
 
   const handleDownload = async (id: string) => {
-    // Set loading state untuk ID ini
     setDownloadingIds((prev) => new Set(prev).add(id))
 
     try {
       const response = await fetch(`/api/registrations/download?id=${id}`)
       if (!response.ok) {
-        const text = await response.text() // 🔍 lihat isi error
+        const text = await response.text()
         console.error("❌ Server error:", response.status, text)
         throw new Error("Download failed")
       }
 
-      // Ambil nama file dari Content-Disposition
       const contentDisposition = response.headers.get("content-disposition")
       let filename = `registrasi-${id}.zip`
       if (contentDisposition) {
@@ -185,7 +174,6 @@ export default function Home() {
         }
       }
 
-      // Convert response ke blob dan trigger download
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -208,7 +196,6 @@ export default function Home() {
         variant: "destructive",
       })
     } finally {
-      // Clear loading state untuk ID ini
       setDownloadingIds((prev) => {
         const newSet = new Set(prev)
         newSet.delete(id)
@@ -260,7 +247,6 @@ export default function Home() {
     })
   }
 
-  // Fungsi untuk menentukan warna badge berdasarkan jalur (diperbaiki)
   const getJalurBadgeStyle = (jalur: string) => {
     if (isRPLJalur(jalur)) {
       return "bg-blue-100 text-blue-800 border border-blue-200"
@@ -269,7 +255,6 @@ export default function Home() {
     }
   }
 
-  // Fungsi untuk menampilkan label jalur yang lebih user-friendly (diperbaiki)
   const getJalurLabel = (jalur: string) => {
     if (isRPLJalur(jalur)) {
       return "RPL"
@@ -282,11 +267,11 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 sm:p-6">
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-6 sm:h-8 bg-gradient-to-r from-blue-200 to-indigo-200 rounded-lg w-48 sm:w-64 mb-4 sm:mb-6"></div>
-            <div className="h-64 sm:h-96 bg-white/50 backdrop-blur-sm rounded-xl shadow-lg"></div>
+            <div className="h-6 sm:h-8 bg-gray-200 rounded-lg w-48 sm:w-64 mb-4 sm:mb-6"></div>
+            <div className="h-64 sm:h-96 bg-white rounded-xl shadow-lg"></div>
           </div>
         </div>
       </div>
@@ -294,7 +279,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
@@ -303,10 +288,8 @@ export default function Home() {
               <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-900 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-1">
-                Dashboard Registrasi
-              </h1>
-              <p className="text-xs sm:text-sm md:text-base text-black">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1">Dashboard Registrasi</h1>
+              <p className="text-xs sm:text-sm md:text-base text-gray-600">
                 Kelola data registrasi mahasiswa dengan mudah dan efisien
               </p>
             </div>
@@ -315,8 +298,7 @@ export default function Home() {
 
         {/* Statistics Cards */}
         <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Total Mahasiswa */}
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -324,15 +306,14 @@ export default function Home() {
                   <p className="text-2xl sm:text-3xl font-bold text-blue-900">{registrations.length}</p>
                   <p className="text-xs text-blue-700 mt-1">Terdaftar</p>
                 </div>
-                <div className="p-2 sm:p-3 bg-blue-200 rounded-full">
+                <div className="p-2 sm:p-3 bg-blue-100 rounded-full">
                   <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-blue-700" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Mahasiswa RPL */}
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -342,15 +323,14 @@ export default function Home() {
                   </p>
                   <p className="text-xs text-green-700 mt-1">Mahasiswa</p>
                 </div>
-                <div className="p-2 sm:p-3 bg-green-200 rounded-full">
+                <div className="p-2 sm:p-3 bg-green-100 rounded-full">
                   <Award className="h-6 w-6 sm:h-8 sm:w-8 text-green-700" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Jalur Non-RPL */}
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300 sm:col-span-2 lg:col-span-1">
+          <Card className="bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 sm:col-span-2 lg:col-span-1">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -360,7 +340,7 @@ export default function Home() {
                   </p>
                   <p className="text-xs text-purple-700 mt-1">Mahasiswa</p>
                 </div>
-                <div className="p-2 sm:p-3 bg-purple-200 rounded-full">
+                <div className="p-2 sm:p-3 bg-purple-100 rounded-full">
                   <Users className="h-6 w-6 sm:h-8 sm:w-8 text-purple-700" />
                 </div>
               </div>
@@ -369,42 +349,39 @@ export default function Home() {
         </div>
 
         {/* Search and Filter Section */}
-        <div className="mb-4 sm:mb-6 bg-white rounded-xl shadow-lg p-4 sm:p-6 border-0">
+        <div className="mb-4 sm:mb-6 bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            {/* Search Input */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Cari berdasarkan nama mahasiswa..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white border-slate-200 focus:border-blue-400 focus:ring-blue-400 text-black text-sm sm:text-base"
+                className="pl-10 bg-white border-gray-200 focus:border-blue-400 focus:ring-blue-400 text-gray-900 text-sm sm:text-base"
               />
             </div>
 
-            {/* Filter Dropdown */}
             <div className="w-full sm:w-64">
               <Select value={filterJalur} onValueChange={setFilterJalur}>
-                <SelectTrigger className="bg-white border-slate-200 focus:border-blue-400 focus:ring-blue-400 text-black text-sm sm:text-base">
-                  <Filter className="h-4 w-4 mr-2 text-black" />
+                <SelectTrigger className="bg-white border-gray-200 focus:border-blue-400 focus:ring-blue-400 text-gray-900 text-sm sm:text-base">
+                  <Filter className="h-4 w-4 mr-2 text-gray-400" />
                   <SelectValue placeholder="Filter berdasarkan jalur" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-slate-200 shadow-lg">
-                  <SelectItem value="all" className="text-black hover:bg-slate-50 focus:bg-slate-50">
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectItem value="all" className="text-gray-900 hover:bg-gray-50 focus:bg-gray-50">
                     Semua Jalur
                   </SelectItem>
-                  <SelectItem value="rpl" className="text-black hover:bg-slate-50 focus:bg-slate-50">
+                  <SelectItem value="rpl" className="text-gray-900 hover:bg-gray-50 focus:bg-gray-50">
                     RPL (Rekognisi Pembelajaran Lampau)
                   </SelectItem>
-                  <SelectItem value="non-rpl" className="text-black hover:bg-slate-50 focus:bg-slate-50">
+                  <SelectItem value="non-rpl" className="text-gray-900 hover:bg-gray-50 focus:bg-gray-50">
                     Non-RPL (Reguler)
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Results Counter */}
-            <div className="flex items-center justify-center sm:justify-start text-xs sm:text-sm text-black bg-slate-50 px-3 sm:px-4 py-2 rounded-lg">
+            <div className="flex items-center justify-center sm:justify-start text-xs sm:text-sm text-gray-600 bg-gray-50 px-3 sm:px-4 py-2 rounded-lg border border-gray-200">
               <span className="font-medium">
                 {filteredRegistrations.length} dari {registrations.length} data
               </span>
@@ -413,10 +390,10 @@ export default function Home() {
         </div>
 
         {/* Data Table */}
-        <Card className="bg-white border-0 shadow-xl">
-          <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200 rounded-t-xl p-4 sm:p-6">
+        <Card className="bg-white border border-gray-200 shadow-xl">
+          <CardHeader className="bg-gray-50 border-b border-gray-200 rounded-t-xl p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-              <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold text-black flex items-center gap-2 sm:gap-3">
+              <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
                 <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
                   <Download className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                 </div>
@@ -425,7 +402,7 @@ export default function Home() {
               <Button
                 onClick={handleDownloadAll}
                 disabled={downloadingAll}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base px-3 sm:px-4 py-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base px-3 sm:px-4 py-2"
               >
                 {downloadingAll ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
@@ -441,38 +418,38 @@ export default function Home() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-slate-50 to-blue-50 border-b-2 border-slate-200">
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm">
+                  <TableRow className="bg-gray-50 border-b-2 border-gray-200">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm">
                       No
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[150px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[150px]">
                       Nama Lengkap
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[120px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[120px]">
                       NIK
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[100px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[100px]">
                       NISN
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[180px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[180px]">
                       Email
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[120px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[120px]">
                       No. HP
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[120px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[120px]">
                       Fakultas
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[150px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[150px]">
                       Program Studi
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[100px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[100px]">
                       Jalur
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[120px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[120px]">
                       Tanggal Daftar
                     </TableHead>
-                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 text-center font-semibold text-black text-xs sm:text-sm min-w-[100px]">
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 text-center font-semibold text-gray-700 text-xs sm:text-sm min-w-[100px]">
                       Aksi
                     </TableHead>
                   </TableRow>
@@ -481,22 +458,24 @@ export default function Home() {
                   {filteredRegistrations.map((registration, index) => (
                     <TableRow
                       key={registration.id}
-                      className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border-b border-slate-100"
+                      className="hover:bg-blue-50 transition-all duration-200 border-b border-gray-100"
                     >
-                      <TableCell className="p-3 sm:p-6 font-medium text-black text-xs sm:text-sm">
+                      <TableCell className="p-3 sm:p-6 font-medium text-gray-700 text-xs sm:text-sm">
                         {index + 1}
                       </TableCell>
-                      <TableCell className="p-3 sm:p-6 font-semibold text-black text-xs sm:text-sm">
+                      <TableCell className="p-3 sm:p-6 font-semibold text-gray-900 text-xs sm:text-sm">
                         {registration.namaLengkap}
                       </TableCell>
-                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">{registration.nik}</TableCell>
-                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">{registration.nisn}</TableCell>
-                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">{registration.email}</TableCell>
-                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">{registration.noHp}</TableCell>
-                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">
+                      <TableCell className="p-3 sm:p-6 text-gray-700 text-xs sm:text-sm">{registration.nik}</TableCell>
+                      <TableCell className="p-3 sm:p-6 text-gray-700 text-xs sm:text-sm">{registration.nisn}</TableCell>
+                      <TableCell className="p-3 sm:p-6 text-gray-700 text-xs sm:text-sm">
+                        {registration.email}
+                      </TableCell>
+                      <TableCell className="p-3 sm:p-6 text-gray-700 text-xs sm:text-sm">{registration.noHp}</TableCell>
+                      <TableCell className="p-3 sm:p-6 text-gray-700 text-xs sm:text-sm">
                         {registration.fakultas}
                       </TableCell>
-                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">
+                      <TableCell className="p-3 sm:p-6 text-gray-700 text-xs sm:text-sm">
                         {registration.programStudi}
                       </TableCell>
                       <TableCell className="p-3 sm:p-6">
@@ -506,7 +485,7 @@ export default function Home() {
                           {getJalurLabel(registration.jalur)}
                         </span>
                       </TableCell>
-                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">
+                      <TableCell className="p-3 sm:p-6 text-gray-700 text-xs sm:text-sm">
                         {formatDate(registration.createdAt)}
                       </TableCell>
                       <TableCell className="p-3 sm:p-6">
@@ -547,11 +526,11 @@ export default function Home() {
 
             {filteredRegistrations.length === 0 && registrations.length > 0 && (
               <div className="text-center py-12 sm:py-16 px-4">
-                <div className="p-3 sm:p-4 bg-slate-100 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-                  <Search className="h-6 w-6 sm:h-8 sm:w-8 text-black" />
+                <div className="p-3 sm:p-4 bg-gray-100 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                  <Search className="h-6 w-6 sm:h-8 sm:w-8 text-gray-500" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-black mb-2">Tidak ada data yang cocok</h3>
-                <p className="text-sm sm:text-base text-black">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Tidak ada data yang cocok</h3>
+                <p className="text-sm sm:text-base text-gray-600">
                   Coba ubah kata kunci pencarian atau filter yang digunakan.
                 </p>
               </div>
@@ -559,11 +538,11 @@ export default function Home() {
 
             {registrations.length === 0 && (
               <div className="text-center py-12 sm:py-16 px-4">
-                <div className="p-3 sm:p-4 bg-slate-100 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-                  <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-black" />
+                <div className="p-3 sm:p-4 bg-gray-100 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                  <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-gray-500" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-black mb-2">Tidak ada data registrasi</h3>
-                <p className="text-sm sm:text-base text-black">Belum ada mahasiswa yang mendaftar.</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Tidak ada data registrasi</h3>
+                <p className="text-sm sm:text-base text-gray-600">Belum ada mahasiswa yang mendaftar.</p>
               </div>
             )}
           </CardContent>
