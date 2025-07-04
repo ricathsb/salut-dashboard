@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react"
 
-import { Download, Trash2, GraduationCap } from "lucide-react"
+import { Download, Trash2, GraduationCap, Award, Users } from "lucide-react"
 import { Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -282,11 +282,11 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gradient-to-r from-blue-200 to-indigo-200 rounded-lg w-64 mb-6"></div>
-            <div className="h-96 bg-white/50 backdrop-blur-sm rounded-xl shadow-lg"></div>
+            <div className="h-6 sm:h-8 bg-gradient-to-r from-blue-200 to-indigo-200 rounded-lg w-48 sm:w-64 mb-4 sm:mb-6"></div>
+            <div className="h-64 sm:h-96 bg-white/50 backdrop-blur-sm rounded-xl shadow-lg"></div>
           </div>
         </div>
       </div>
@@ -294,19 +294,19 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg text-white">
-              <GraduationCap className="h-8 w-8" />
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg text-white w-fit">
+              <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-900 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-900 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-1">
                 Dashboard Registrasi
               </h1>
-              <p className="text-sm md:text-base text-black">
+              <p className="text-xs sm:text-sm md:text-base text-black">
                 Kelola data registrasi mahasiswa dengan mudah dan efisien
               </p>
             </div>
@@ -314,18 +314,18 @@ export default function Home() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Total Mahasiswa */}
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600 mb-1">Total Mahasiswa</p>
-                  <p className="text-3xl font-bold text-blue-900">{registrations.length}</p>
+                  <p className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Mahasiswa</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-blue-900">{registrations.length}</p>
                   <p className="text-xs text-blue-700 mt-1">Terdaftar</p>
                 </div>
-                <div className="p-3 bg-blue-200 rounded-full">
-                  <GraduationCap className="h-8 w-8 text-blue-700" />
+                <div className="p-2 sm:p-3 bg-blue-200 rounded-full">
+                  <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-blue-700" />
                 </div>
               </div>
             </CardContent>
@@ -333,35 +333,35 @@ export default function Home() {
 
           {/* Mahasiswa RPL */}
           <Card className="bg-gradient-to-br from-green-50 to-green-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600 mb-1">Jalur RPL</p>
-                  <p className="text-3xl font-bold text-green-900">
+                  <p className="text-xs sm:text-sm font-medium text-green-600 mb-1">Jalur RPL</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-green-900">
                     {registrations.filter((reg) => isRPLJalur(reg.jalur)).length}
                   </p>
                   <p className="text-xs text-green-700 mt-1">Mahasiswa</p>
                 </div>
-                <div className="p-3 bg-green-200 rounded-full">
-                  <div className="h-8 w-8 flex items-center justify-center text-green-700 font-bold text-lg">R</div>
+                <div className="p-2 sm:p-3 bg-green-200 rounded-full">
+                  <Award className="h-6 w-6 sm:h-8 sm:w-8 text-green-700" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Jalur Non-RPL */}
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300 sm:col-span-2 lg:col-span-1">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600 mb-1">Jalur Non-RPL</p>
-                  <p className="text-3xl font-bold text-purple-900">
+                  <p className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Jalur Non-RPL</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-purple-900">
                     {registrations.filter((reg) => isNonRPLJalur(reg.jalur)).length}
                   </p>
                   <p className="text-xs text-purple-700 mt-1">Mahasiswa</p>
                 </div>
-                <div className="p-3 bg-purple-200 rounded-full">
-                  <div className="h-8 w-8 flex items-center justify-center text-purple-700 font-bold text-lg">N</div>
+                <div className="p-2 sm:p-3 bg-purple-200 rounded-full">
+                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-purple-700" />
                 </div>
               </div>
             </CardContent>
@@ -369,8 +369,8 @@ export default function Home() {
         </div>
 
         {/* Search and Filter Section */}
-        <div className="mb-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 border-0">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="mb-4 sm:mb-6 bg-white rounded-xl shadow-lg p-4 sm:p-6 border-0">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             {/* Search Input */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black h-4 w-4" />
@@ -378,25 +378,25 @@ export default function Home() {
                 placeholder="Cari berdasarkan nama mahasiswa..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white border-slate-200 focus:border-blue-400 focus:ring-blue-400 text-black"
+                className="pl-10 bg-white border-slate-200 focus:border-blue-400 focus:ring-blue-400 text-black text-sm sm:text-base"
               />
             </div>
 
             {/* Filter Dropdown */}
-            <div className="md:w-64">
+            <div className="w-full sm:w-64">
               <Select value={filterJalur} onValueChange={setFilterJalur}>
-                <SelectTrigger className="bg-white border-slate-200 focus:border-blue-400 focus:ring-blue-400 text-black">
+                <SelectTrigger className="bg-white border-slate-200 focus:border-blue-400 focus:ring-blue-400 text-black text-sm sm:text-base">
                   <Filter className="h-4 w-4 mr-2 text-black" />
                   <SelectValue placeholder="Filter berdasarkan jalur" />
                 </SelectTrigger>
-                <SelectContent className="text-black">
-                  <SelectItem value="all" className="text-black">
+                <SelectContent className="bg-white border border-slate-200 shadow-lg">
+                  <SelectItem value="all" className="text-black hover:bg-slate-50 focus:bg-slate-50">
                     Semua Jalur
                   </SelectItem>
-                  <SelectItem value="rpl" className="text-black">
+                  <SelectItem value="rpl" className="text-black hover:bg-slate-50 focus:bg-slate-50">
                     RPL (Rekognisi Pembelajaran Lampau)
                   </SelectItem>
-                  <SelectItem value="non-rpl" className="text-black">
+                  <SelectItem value="non-rpl" className="text-black hover:bg-slate-50 focus:bg-slate-50">
                     Non-RPL (Reguler)
                   </SelectItem>
                 </SelectContent>
@@ -404,7 +404,7 @@ export default function Home() {
             </div>
 
             {/* Results Counter */}
-            <div className="flex items-center text-sm text-black bg-slate-50 px-4 py-2 rounded-lg">
+            <div className="flex items-center justify-center sm:justify-start text-xs sm:text-sm text-black bg-slate-50 px-3 sm:px-4 py-2 rounded-lg">
               <span className="font-medium">
                 {filteredRegistrations.length} dari {registrations.length} data
               </span>
@@ -413,26 +413,27 @@ export default function Home() {
         </div>
 
         {/* Data Table */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-          <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200 rounded-t-xl">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl font-bold text-black flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Download className="h-5 w-5 text-blue-600" />
+        <Card className="bg-white border-0 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200 rounded-t-xl p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+              <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold text-black flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+                  <Download className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                 </div>
                 Data Registrasi Mahasiswa
               </CardTitle>
               <Button
                 onClick={handleDownloadAll}
                 disabled={downloadingAll}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base px-3 sm:px-4 py-2"
               >
                 {downloadingAll ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                 ) : (
                   <Download className="h-4 w-4" />
                 )}
-                {downloadingAll ? "Mengunduh..." : "Download Semua"}
+                <span className="hidden sm:inline">{downloadingAll ? "Mengunduh..." : "Download Semua"}</span>
+                <span className="sm:hidden">{downloadingAll ? "..." : "Download"}</span>
               </Button>
             </div>
           </CardHeader>
@@ -441,17 +442,39 @@ export default function Home() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gradient-to-r from-slate-50 to-blue-50 border-b-2 border-slate-200">
-                    <TableHead className="h-14 px-6 font-semibold text-black">No</TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-black">Nama Lengkap</TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-black">NIK</TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-black">NISN</TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-black">Email</TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-black">No. HP</TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-black">Fakultas</TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-black">Program Studi</TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-black">Jalur</TableHead>
-                    <TableHead className="h-14 px-6 font-semibold text-black">Tanggal Daftar</TableHead>
-                    <TableHead className="h-14 px-6 text-center font-semibold text-black">Aksi</TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm">
+                      No
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[150px]">
+                      Nama Lengkap
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[120px]">
+                      NIK
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[100px]">
+                      NISN
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[180px]">
+                      Email
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[120px]">
+                      No. HP
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[120px]">
+                      Fakultas
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[150px]">
+                      Program Studi
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[100px]">
+                      Jalur
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-black text-xs sm:text-sm min-w-[120px]">
+                      Tanggal Daftar
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 text-center font-semibold text-black text-xs sm:text-sm min-w-[100px]">
+                      Aksi
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -460,35 +483,45 @@ export default function Home() {
                       key={registration.id}
                       className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border-b border-slate-100"
                     >
-                      <TableCell className="p-6 font-medium text-black">{index + 1}</TableCell>
-                      <TableCell className="p-6 font-semibold text-black">{registration.namaLengkap}</TableCell>
-                      <TableCell className="p-6 text-black">{registration.nik}</TableCell>
-                      <TableCell className="p-6 text-black">{registration.nisn}</TableCell>
-                      <TableCell className="p-6 text-black">{registration.email}</TableCell>
-                      <TableCell className="p-6 text-black">{registration.noHp}</TableCell>
-                      <TableCell className="p-6 text-black">{registration.fakultas}</TableCell>
-                      <TableCell className="p-6 text-black">{registration.programStudi}</TableCell>
-                      <TableCell className="p-6">
+                      <TableCell className="p-3 sm:p-6 font-medium text-black text-xs sm:text-sm">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell className="p-3 sm:p-6 font-semibold text-black text-xs sm:text-sm">
+                        {registration.namaLengkap}
+                      </TableCell>
+                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">{registration.nik}</TableCell>
+                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">{registration.nisn}</TableCell>
+                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">{registration.email}</TableCell>
+                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">{registration.noHp}</TableCell>
+                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">
+                        {registration.fakultas}
+                      </TableCell>
+                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">
+                        {registration.programStudi}
+                      </TableCell>
+                      <TableCell className="p-3 sm:p-6">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${getJalurBadgeStyle(registration.jalur)}`}
+                          className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${getJalurBadgeStyle(registration.jalur)}`}
                         >
                           {getJalurLabel(registration.jalur)}
                         </span>
                       </TableCell>
-                      <TableCell className="p-6 text-black">{formatDate(registration.createdAt)}</TableCell>
-                      <TableCell className="p-6">
-                        <div className="flex items-center justify-center gap-2">
+                      <TableCell className="p-3 sm:p-6 text-black text-xs sm:text-sm">
+                        {formatDate(registration.createdAt)}
+                      </TableCell>
+                      <TableCell className="p-3 sm:p-6">
+                        <div className="flex items-center justify-center gap-1 sm:gap-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleDownload(registration.id)}
                             disabled={downloadingIds.has(registration.id)}
-                            className="h-8 w-8 p-0 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="h-7 w-7 sm:h-8 sm:w-8 p-0 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {downloadingIds.has(registration.id) ? (
-                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                              <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
                             ) : (
-                              <Download className="h-4 w-4" />
+                              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                             )}
                           </Button>
                           <Button
@@ -496,12 +529,12 @@ export default function Home() {
                             size="sm"
                             onClick={() => handleDelete(registration.id)}
                             disabled={deletingIds.has(registration.id)}
-                            className="h-8 w-8 p-0 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="h-7 w-7 sm:h-8 sm:w-8 p-0 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {deletingIds.has(registration.id) ? (
-                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                              <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
                             ) : (
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             )}
                           </Button>
                         </div>
@@ -513,22 +546,24 @@ export default function Home() {
             </div>
 
             {filteredRegistrations.length === 0 && registrations.length > 0 && (
-              <div className="text-center py-16">
-                <div className="p-4 bg-slate-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <Search className="h-8 w-8 text-black" />
+              <div className="text-center py-12 sm:py-16 px-4">
+                <div className="p-3 sm:p-4 bg-slate-100 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                  <Search className="h-6 w-6 sm:h-8 sm:w-8 text-black" />
                 </div>
-                <h3 className="text-xl font-semibold text-black mb-2">Tidak ada data yang cocok</h3>
-                <p className="text-black">Coba ubah kata kunci pencarian atau filter yang digunakan.</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-black mb-2">Tidak ada data yang cocok</h3>
+                <p className="text-sm sm:text-base text-black">
+                  Coba ubah kata kunci pencarian atau filter yang digunakan.
+                </p>
               </div>
             )}
 
             {registrations.length === 0 && (
-              <div className="text-center py-16">
-                <div className="p-4 bg-slate-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <GraduationCap className="h-8 w-8 text-black" />
+              <div className="text-center py-12 sm:py-16 px-4">
+                <div className="p-3 sm:p-4 bg-slate-100 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                  <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-black" />
                 </div>
-                <h3 className="text-xl font-semibold text-black mb-2">Tidak ada data registrasi</h3>
-                <p className="text-black">Belum ada mahasiswa yang mendaftar.</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-black mb-2">Tidak ada data registrasi</h3>
+                <p className="text-sm sm:text-base text-black">Belum ada mahasiswa yang mendaftar.</p>
               </div>
             )}
           </CardContent>
