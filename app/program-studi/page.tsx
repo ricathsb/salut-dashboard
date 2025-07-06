@@ -1008,8 +1008,8 @@ export default function ProgramStudiPage() {
                                             <TableCell>
                                                 <Badge
                                                     className={`font-medium ${item.isActive
-                                                            ? "bg-green-100 text-green-800 border border-green-200"
-                                                            : "bg-red-100 text-red-800 border border-red-200"
+                                                        ? "bg-green-100 text-green-800 border border-green-200"
+                                                        : "bg-red-100 text-red-800 border border-red-200"
                                                         }`}
                                                 >
                                                     {item.isActive ? "✅ Aktif" : "❌ Tidak Aktif"}
@@ -1105,10 +1105,10 @@ export default function ProgramStudiPage() {
                                                 onClick={() => typeof page === "number" && setCurrentPage(page)}
                                                 disabled={page === "..."}
                                                 className={`w-9 h-9 p-0 ${page === currentPage
-                                                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
-                                                        : page === "..."
-                                                            ? "cursor-default bg-transparent border-none"
-                                                            : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                                                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
+                                                    : page === "..."
+                                                        ? "cursor-default bg-transparent border-none"
+                                                        : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                                                     }`}
                                             >
                                                 {page}

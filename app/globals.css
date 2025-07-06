@@ -19,6 +19,12 @@
   }
 }
 
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -53,7 +59,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
 
-    /* Sidebar variables */
+    /* Force light mode sidebar variables */
     --sidebar-background: 255 255 255;
     --sidebar-foreground: 15 23 42;
     --sidebar-primary: 15 23 42;
@@ -64,41 +70,39 @@ body {
     --sidebar-ring: 59 130 246;
   }
 
+  /* Remove dark mode completely - force light mode always */
+  html[data-theme="dark"],
+  html.dark,
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 0 0% 100% !important;
+    --foreground: 222.2 84% 4.9% !important;
+    --card: 0 0% 100% !important;
+    --card-foreground: 222.2 84% 4.9% !important;
+    --popover: 0 0% 100% !important;
+    --popover-foreground: 222.2 84% 4.9% !important;
+    --primary: 222.2 47.4% 11.2% !important;
+    --primary-foreground: 210 40% 98% !important;
+    --secondary: 210 40% 96% !important;
+    --secondary-foreground: 222.2 84% 4.9% !important;
+    --muted: 210 40% 96% !important;
+    --muted-foreground: 215.4 16.3% 46.9% !important;
+    --accent: 210 40% 96% !important;
+    --accent-foreground: 222.2 84% 4.9% !important;
+    --destructive: 0 84.2% 60.2% !important;
+    --destructive-foreground: 210 40% 98% !important;
+    --border: 214.3 31.8% 91.4% !important;
+    --input: 214.3 31.8% 91.4% !important;
+    --ring: 222.2 84% 4.9% !important;
 
-    /* Sidebar variables for dark mode */
-    --sidebar-background: 15 23 42;
-    --sidebar-foreground: 248 250 252;
-    --sidebar-primary: 248 250 252;
-    --sidebar-primary-foreground: 15 23 42;
-    --sidebar-accent: 30 41 59;
-    --sidebar-accent-foreground: 248 250 252;
-    --sidebar-border: 51 65 85;
-    --sidebar-ring: 59 130 246;
+    /* Force light mode sidebar variables */
+    --sidebar-background: 255 255 255 !important;
+    --sidebar-foreground: 15 23 42 !important;
+    --sidebar-primary: 15 23 42 !important;
+    --sidebar-primary-foreground: 255 255 255 !important;
+    --sidebar-accent: 241 245 249 !important;
+    --sidebar-accent-foreground: 15 23 42 !important;
+    --sidebar-border: 226 232 240 !important;
+    --sidebar-ring: 59 130 246 !important;
   }
 }
 
@@ -115,12 +119,6 @@ body {
 }
 
 @layer components {
-
-  /* Main layout */
-  .main-content {
-    background-color: #f8fafc;
-    min-height: 100vh;
-  }
 
   /* Card styling */
   .card-solid {
@@ -155,11 +153,6 @@ body {
     backdrop-filter: blur(4px);
   }
 
-  /* Sidebar container */
-  .sidebar-container {
-    z-index: 10;
-  }
-
   /* Text visibility */
   .text-visible {
     color: #1e293b !important;
@@ -183,22 +176,80 @@ body {
     backdrop-filter: blur(2px) !important;
   }
 
-  /* Sidebar mobile specific */
+  /* Force light mode for all sidebar components */
+  [data-sidebar="sidebar"] {
+    background-color: white !important;
+    color: #1f2937 !important;
+    border-color: #e5e7eb !important;
+  }
+
+  [data-sidebar="header"] {
+    background-color: white !important;
+    color: #1f2937 !important;
+    border-color: #e5e7eb !important;
+  }
+
+  [data-sidebar="content"] {
+    background-color: white !important;
+    color: #1f2937 !important;
+  }
+
+  [data-sidebar="group-label"] {
+    color: #6b7280 !important;
+  }
+
+  [data-sidebar="menu-button"] {
+    color: #374151 !important;
+    background-color: transparent !important;
+  }
+
+  [data-sidebar="menu-button"]:hover {
+    background-color: #dbeafe !important;
+    color: #1d4ed8 !important;
+  }
+
+  [data-sidebar="menu-button"][data-active="true"] {
+    background-color: #dbeafe !important;
+    color: #1d4ed8 !important;
+    font-weight: 600 !important;
+  }
+
+  /* Mobile sidebar fixes */
   [data-sidebar="sidebar"][data-mobile="true"] {
     background-color: white !important;
     color: #1f2937 !important;
   }
 
-  /* Fix mobile sidebar text visibility */
   [data-mobile="true"] .text-sidebar-foreground {
     color: #1f2937 !important;
   }
 
   [data-mobile="true"] .hover\:bg-sidebar-accent:hover {
-    background-color: #f3f4f6 !important;
+    background-color: #dbeafe !important;
   }
 
   [data-mobile="true"] .hover\:text-sidebar-accent-foreground:hover {
+    color: #1d4ed8 !important;
+  }
+
+  /* Sheet content for mobile sidebar */
+  .mobile-sidebar-content,
+  [data-radix-dialog-content] {
+    background-color: white !important;
     color: #1f2937 !important;
+    border: none !important;
+  }
+
+  /* Page content container */
+  .page-container {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .page-container {
+      padding: 1.5rem;
+    }
   }
 }

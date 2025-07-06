@@ -267,7 +267,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+      <div className="page-container">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse">
             <div className="h-6 sm:h-8 bg-gray-200 rounded-lg w-48 sm:w-64 mb-4 sm:mb-6"></div>
@@ -279,7 +279,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+    <div className="page-container">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 sm:mb-8">

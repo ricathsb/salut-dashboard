@@ -23,7 +23,6 @@ const menuItems = [
         url: "/",
         icon: Home,
     },
-
     {
         title: "Fakultas",
         url: "/fakultas",
@@ -34,23 +33,16 @@ const menuItems = [
         url: "/program-studi",
         icon: BookOpen,
     },
-
 ]
 
 export function AppSidebar() {
     const pathname = usePathname()
 
     return (
-        <Sidebar>
+        <Sidebar className="h-screen">
             <SidebarHeader className="border-b border-gray-200 bg-white">
                 <div className="flex items-center gap-3 px-4 py-4 bg-white">
-                    <Image
-                        src="/logo.ico"
-                        alt="Logo"
-                        width={36}
-                        height={36}
-                        className="h-9 w-9"
-                    />
+                    <Image src="/logo.ico" alt="Logo" width={36} height={36} className="h-9 w-9" />
                     <div>
                         <h2 className="text-xl font-bold text-gray-900">SALUT Dashboard</h2>
                         <p className="text-sm text-gray-600">Sistem Akademik</p>
@@ -58,8 +50,7 @@ export function AppSidebar() {
                 </div>
             </SidebarHeader>
 
-
-            <SidebarContent className="px-2 py-4 bg-white">
+            <SidebarContent className="px-2 py-4 bg-white flex-1">
                 <SidebarGroup>
                     <SidebarGroupLabel className="text-gray-700 font-medium">Menu Utama</SidebarGroupLabel>
                     <SidebarGroupContent>
