@@ -18,6 +18,7 @@ model Pendaftaran {
   alamat            String
   fakultas          String
   programStudi      String
+  jenjang           String
   jalur             String
   pasFoto           String?
   ktp               String?

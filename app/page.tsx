@@ -2,19 +2,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
-
 import { Download, Trash2, GraduationCap, Award, Users } from "lucide-react"
 import { Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
 import { toast } from "@/hooks/use-toast"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
 import { Button } from "@/components/ui/button"
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 
 interface Registration {
   id: string
@@ -27,6 +23,7 @@ interface Registration {
   alamat: string
   fakultas: string
   programStudi: string
+  jenjang: string // Added missing jenjang field
   dokumenPath: string | null
   status: "pending" | "approved" | "rejected"
   createdAt: string
@@ -51,13 +48,11 @@ export default function Home() {
     try {
       const response = await fetch("/api/registrations")
       const data = await response.json()
-
       console.log("=== DEBUG DATA JALUR ===")
       data.forEach((item: Registration, index: number) => {
         console.log(`${index + 1}. ${item.namaLengkap} - Jalur: "${item.jalur}" (type: ${typeof item.jalur})`)
       })
       console.log("========================")
-
       setRegistrations(data)
     } catch (error) {
       console.error("Error fetching registrations:", error)
@@ -73,11 +68,9 @@ export default function Home() {
 
   const isRPLJalur = (jalur: string): boolean => {
     const jalurLower = jalur?.toString().trim().toLowerCase() || ""
-
     if (jalurLower.includes("non") && jalurLower.includes("rpl")) {
       return false
     }
-
     return (
       jalurLower === "rpl" ||
       jalurLower === "rekognisi pembelajaran lampau" ||
@@ -87,7 +80,6 @@ export default function Home() {
 
   const isNonRPLJalur = (jalur: string): boolean => {
     const jalurLower = jalur?.toString().trim().toLowerCase() || ""
-
     return (
       (jalurLower.includes("non") && jalurLower.includes("rpl")) ||
       jalurLower === "non-rpl" ||
@@ -99,7 +91,6 @@ export default function Home() {
 
   const filteredRegistrations = registrations.filter((registration) => {
     const matchesSearch = registration.namaLengkap.toLowerCase().includes(searchTerm.toLowerCase())
-
     let matchesFilter = false
     if (filterJalur === "all") {
       matchesFilter = true
@@ -108,18 +99,15 @@ export default function Home() {
     } else if (filterJalur === "non-rpl") {
       matchesFilter = isNonRPLJalur(registration.jalur)
     }
-
     return matchesSearch && matchesFilter
   })
 
   const handleDelete = async (id: string) => {
     setDeletingIds((prev) => new Set(prev).add(id))
-
     try {
       const response = await fetch(`/api/registrations/delete?id=${id}`, {
         method: "DELETE",
       })
-
       const contentType = response.headers.get("content-type")
       let data
       if (contentType?.includes("application/json")) {
@@ -127,13 +115,10 @@ export default function Home() {
       } else {
         data = { error: "Unexpected response from server" }
       }
-
       if (!response.ok) {
         throw new Error(data.error || "Delete failed")
       }
-
       setRegistrations((prevRegistrations) => prevRegistrations.filter((registration) => registration.id !== id))
-
       toast({
         title: "Success",
         description: `Data dengan ID ${id} berhasil dihapus.`,
@@ -156,7 +141,6 @@ export default function Home() {
 
   const handleDownload = async (id: string) => {
     setDownloadingIds((prev) => new Set(prev).add(id))
-
     try {
       const response = await fetch(`/api/registrations/download?id=${id}`)
       if (!response.ok) {
@@ -164,7 +148,6 @@ export default function Home() {
         console.error("❌ Server error:", response.status, text)
         throw new Error("Download failed")
       }
-
       const contentDisposition = response.headers.get("content-disposition")
       let filename = `registrasi-${id}.zip`
       if (contentDisposition) {
@@ -173,7 +156,6 @@ export default function Home() {
           filename = match[1]
         }
       }
-
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -183,7 +165,6 @@ export default function Home() {
       a.click()
       a.remove()
       window.URL.revokeObjectURL(url)
-
       toast({
         title: "Success",
         description: `File ${filename} berhasil diunduh`,
@@ -206,13 +187,11 @@ export default function Home() {
 
   const handleDownloadAll = async () => {
     setDownloadingAll(true)
-
     try {
       const response = await fetch("/api/registrations/download-all")
       if (!response.ok) {
         throw new Error("Download all failed")
       }
-
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -222,7 +201,6 @@ export default function Home() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-
       toast({
         title: "Berhasil",
         description: "Berhasil mengunduh semua data pendaftaran dalam bentuk ZIP.",
@@ -263,6 +241,18 @@ export default function Home() {
     } else {
       return jalur || "Tidak Diketahui"
     }
+  }
+
+  // Function to get jenjang badge style similar to program-studi page
+  const getJenjangBadge = (jenjang: string) => {
+    const colors = {
+      D3: "bg-orange-100 text-orange-800 border border-orange-200",
+      D4: "bg-purple-100 text-purple-800 border border-purple-200",
+      S1: "bg-blue-100 text-blue-800 border border-blue-200",
+      S2: "bg-green-100 text-green-800 border border-green-200",
+      S3: "bg-red-100 text-red-800 border border-red-200",
+    }
+    return colors[jenjang as keyof typeof colors] || "bg-gray-100 text-gray-800 border border-gray-200"
   }
 
   if (loading) {
@@ -360,7 +350,6 @@ export default function Home() {
                 className="pl-10 bg-white border-gray-200 focus:border-blue-400 focus:ring-blue-400 text-gray-900 text-sm sm:text-base"
               />
             </div>
-
             <div className="w-full sm:w-64">
               <Select value={filterJalur} onValueChange={setFilterJalur}>
                 <SelectTrigger className="bg-white border-gray-200 focus:border-blue-400 focus:ring-blue-400 text-gray-900 text-sm sm:text-base">
@@ -380,7 +369,6 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="flex items-center justify-center sm:justify-start text-xs sm:text-sm text-gray-600 bg-gray-50 px-3 sm:px-4 py-2 rounded-lg border border-gray-200">
               <span className="font-medium">
                 {filteredRegistrations.length} dari {registrations.length} data
@@ -444,6 +432,9 @@ export default function Home() {
                       Program Studi
                     </TableHead>
                     <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[100px]">
+                      Jenjang
+                    </TableHead>
+                    <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[100px]">
                       Jalur
                     </TableHead>
                     <TableHead className="h-12 sm:h-14 px-3 sm:px-6 font-semibold text-gray-700 text-xs sm:text-sm min-w-[120px]">
@@ -479,11 +470,16 @@ export default function Home() {
                         {registration.programStudi}
                       </TableCell>
                       <TableCell className="p-3 sm:p-6">
-                        <span
-                          className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${getJalurBadgeStyle(registration.jalur)}`}
+                        <Badge className={`font-medium border ${getJenjangBadge(registration.jenjang)}`}>
+                          {registration.jenjang || "Tidak Diketahui"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="p-3 sm:p-6">
+                        <Badge
+                          className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium border ${getJalurBadgeStyle(registration.jalur)}`}
                         >
                           {getJalurLabel(registration.jalur)}
-                        </span>
+                        </Badge>
                       </TableCell>
                       <TableCell className="p-3 sm:p-6 text-gray-700 text-xs sm:text-sm">
                         {formatDate(registration.createdAt)}
@@ -523,7 +519,6 @@ export default function Home() {
                 </TableBody>
               </Table>
             </div>
-
             {filteredRegistrations.length === 0 && registrations.length > 0 && (
               <div className="text-center py-12 sm:py-16 px-4">
                 <div className="p-3 sm:p-4 bg-gray-100 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
@@ -535,7 +530,6 @@ export default function Home() {
                 </p>
               </div>
             )}
-
             {registrations.length === 0 && (
               <div className="text-center py-12 sm:py-16 px-4">
                 <div className="p-3 sm:p-4 bg-gray-100 rounded-full w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">

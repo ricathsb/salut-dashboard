@@ -644,7 +644,7 @@ export default function ProgramStudiPage() {
                                 <div>
                                     <p className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Akreditasi Unggul</p>
                                     <p className="text-2xl sm:text-3xl font-bold text-purple-900">
-                                        {programStudi.filter((p) => p.akreditasi === "Unggul" || p.akreditasi === "A").length}
+                                        {programStudi.filter((p) => p.akreditasi === "Unggul").length}
                                     </p>
                                     <p className="text-xs text-purple-700 mt-1">Terakreditasi</p>
                                 </div>
@@ -654,6 +654,7 @@ export default function ProgramStudiPage() {
                             </div>
                         </CardContent>
                     </Card>
+
 
                     <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                         <CardContent className="p-4 sm:p-6">

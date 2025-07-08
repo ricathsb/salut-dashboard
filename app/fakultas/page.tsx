@@ -361,7 +361,7 @@ export default function FakultasPage() {
                                 <div>
                                     <p className="text-sm font-medium text-gray-600">Akreditasi Unggul</p>
                                     <p className="text-3xl font-bold text-purple-600">
-                                        {fakultas.filter((f) => f.akreditasi === "Unggul" || f.akreditasi === "A").length}
+                                        {fakultas.filter((f) => f.akreditasi === "Unggul").length}
                                     </p>
                                 </div>
                                 <Award className="h-8 w-8 text-purple-600" />
