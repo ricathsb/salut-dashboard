@@ -107,3 +107,12 @@ model validasi_data {
   userAgent String?
   createdAt DateTime @default(now())
 }
+
+model brosur {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  linkUrl   String
+  aktif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
