@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, School, BookOpen, ImageIcon } from "lucide-react"
+import { Home, School, BookOpen, ImageIcon, Newspaper } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import ImageComponent from "next/image"
@@ -32,6 +32,11 @@ const menuItems = [
         title: "Program Studi",
         url: "/program-studi",
         icon: BookOpen,
+    },
+    {
+        title: "Berita",
+        url: "/berita",
+        icon: Newspaper,
     },
     {
         title: "Brosur",
