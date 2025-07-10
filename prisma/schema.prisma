@@ -116,3 +116,18 @@ model brosur {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Berita {
+id        String   @id @default(uuid())
+judul     String
+konten    String
+gambar    String
+slug      String   @unique
+linkUrl   String?  // Custom URL that admin can set for "Read More" button
+tanggal   DateTime @default(now())
+aktif     Boolean  @default(true)
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+@@map("berita")
+}
