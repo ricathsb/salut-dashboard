@@ -1,10 +1,9 @@
 "use client"
 
-import { Home, School, BookOpen, ImageIcon, Newspaper } from "lucide-react"
+import { Home, School, BookOpen, ImageIcon, Newspaper, LogOut } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import ImageComponent from "next/image"
-
 import {
     Sidebar,
     SidebarContent,
@@ -15,6 +14,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarHeader,
+    SidebarFooter,
 } from "@/components/ui/sidebar"
 
 const menuItems = [
@@ -47,6 +47,30 @@ const menuItems = [
 
 export function AppSidebar() {
     const pathname = usePathname()
+
+    const handleLogout = async () => {
+        try {
+            const response = await fetch("/api/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            })
+
+            if (response.ok) {
+                // Force a hard redirect to ensure middleware runs
+                window.location.href = "/login"
+            } else {
+                console.error("Logout failed")
+                // Still redirect even if logout API fails
+                window.location.href = "/login"
+            }
+        } catch (error) {
+            console.error("Logout error:", error)
+            // Still redirect even if there's an error
+            window.location.href = "/login"
+        }
+    }
 
     return (
         <Sidebar className="h-screen">
@@ -83,6 +107,24 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+
+            <SidebarFooter className="border-t border-gray-200 bg-white p-2">
+                <SidebarGroup>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    onClick={handleLogout}
+                                    className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200 w-full"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                    <span>Logout</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+            </SidebarFooter>
         </Sidebar>
     )
 }
