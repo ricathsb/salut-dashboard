@@ -1,101 +1,233 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { PrismaClient } from "@prisma/client"
+import jwt from "jsonwebtoken"
 
-// GET - Ambil semua data berita
-export async function GET() {
+const prisma = new PrismaClient()
+
+// Verify JWT token
+function verifyToken(request: NextRequest) {
+    const token = request.cookies.get("token")?.value
+
+    if (!token) {
+        return null
+    }
+
     try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key")
+        return decoded
+    } catch (error) {
+        console.error("Token verification failed:", error)
+        return null
+    }
+}
+
+
+
+export async function GET(request: NextRequest) {
+    try {
+        const user = verifyToken(request)
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+
         const berita = await prisma.berita.findMany({
             orderBy: {
                 createdAt: "desc",
             },
         })
+
         return NextResponse.json(berita)
     } catch (error) {
         console.error("Error fetching berita:", error)
-        return NextResponse.json({ error: "Failed to fetch berita" }, { status: 500 })
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 })
     }
 }
 
-// POST - Buat berita baru
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
     try {
-        const body = await req.json()
-        const { judul, konten, gambar, slug, linkUrl, aktif } = body
+        const user = verifyToken(request)
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+
+        const body = await request.json()
+        const {
+            judul,
+            konten,
+            kontenHtml,
+            gambar,
+            slug,
+            linkUrl,
+            jenis,
+            excerpt,
+            metaTitle,
+            metaDescription,
+            tags,
+            author,
+            aktif,
+        } = body
+
+        // Validate required fields
+        if (!judul || !gambar || !jenis) {
+            return NextResponse.json({ error: "Judul, gambar, dan jenis berita harus diisi" }, { status: 400 })
+        }
+
+        if (jenis === "internal" && !kontenHtml) {
+            return NextResponse.json({ error: "Konten HTML harus diisi untuk berita internal" }, { status: 400 })
+        }
+
+        if (jenis === "eksternal" && (!konten || !linkUrl)) {
+            return NextResponse.json({ error: "Konten dan link URL harus diisi untuk berita eksternal" }, { status: 400 })
+        }
+
+        // Generate slug if not provided (for internal news)
+        let finalSlug = slug
+        if (jenis === "internal" && !slug) {
+            finalSlug = judul
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, "")
+                .replace(/\s+/g, "-")
+                .replace(/-+/g, "-")
+        }
+
+        // Check if slug already exists (for internal news)
+        if (jenis === "internal" && finalSlug) {
+            const existingBerita = await prisma.berita.findUnique({
+                where: { slug: finalSlug },
+            })
+
+            if (existingBerita) {
+                finalSlug = `${finalSlug}-${Date.now()}`
+            }
+        }
 
         const berita = await prisma.berita.create({
             data: {
                 judul,
-                konten,
+                konten: jenis === "internal" ? kontenHtml : konten,
                 gambar,
-                slug,
-                linkUrl,
+                slug: finalSlug || "",
+                linkUrl: jenis === "eksternal" ? linkUrl : null,
+                jenis,
+                excerpt: excerpt || "",
+                metaTitle: metaTitle || judul,
+                metaDescription: metaDescription || "",
+                tags: tags || "",
+                author: author || "",
+                tanggal: new Date().toISOString(),
                 aktif: aktif ?? true,
             },
         })
 
         return NextResponse.json(berita, { status: 201 })
-    } catch (error: any) {
+    } catch (error) {
         console.error("Error creating berita:", error)
-        if (error.code === "P2002") {
-            return NextResponse.json({ error: "Slug sudah digunakan" }, { status: 400 })
-        }
-        return NextResponse.json({ error: "Failed to create berita" }, { status: 500 })
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 })
     }
 }
 
-// PUT - Update berita
-export async function PUT(req: NextRequest) {
+export async function PUT(request: NextRequest) {
     try {
-        const body = await req.json()
-        const { id, judul, konten, gambar, slug, linkUrl, aktif } = body
+        const user = verifyToken(request)
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+
+        const body = await request.json()
+        const {
+            id,
+            judul,
+            konten,
+            kontenHtml,
+            gambar,
+            slug,
+            linkUrl,
+            jenis,
+            excerpt,
+            metaTitle,
+            metaDescription,
+            tags,
+            author,
+            aktif,
+        } = body
+
+        if (!id) {
+            return NextResponse.json({ error: "ID berita harus disediakan" }, { status: 400 })
+        }
+
+        // Validate required fields
+        if (!judul || !gambar || !jenis) {
+            return NextResponse.json({ error: "Judul, gambar, dan jenis berita harus diisi" }, { status: 400 })
+        }
+
+        if (jenis === "internal" && !kontenHtml) {
+            return NextResponse.json({ error: "Konten HTML harus diisi untuk berita internal" }, { status: 400 })
+        }
+
+        if (jenis === "eksternal" && (!konten || !linkUrl)) {
+            return NextResponse.json({ error: "Konten dan link URL harus diisi untuk berita eksternal" }, { status: 400 })
+        }
+
+        // Check if slug already exists (for internal news, excluding current item)
+        if (jenis === "internal" && slug) {
+            const existingBerita = await prisma.berita.findFirst({
+                where: {
+                    slug: slug,
+                    NOT: { id: id },
+                },
+            })
+
+            if (existingBerita) {
+                return NextResponse.json({ error: "Slug sudah digunakan" }, { status: 400 })
+            }
+        }
 
         const berita = await prisma.berita.update({
             where: { id },
             data: {
                 judul,
-                konten,
+                konten: jenis === "internal" ? kontenHtml : konten,
                 gambar,
-                slug,
-                linkUrl,
-                aktif,
-                updatedAt: new Date(),
+                slug: slug || "",
+                linkUrl: jenis === "eksternal" ? linkUrl : null,
+                jenis,
+                excerpt: excerpt || "",
+                metaTitle: metaTitle || judul,
+                metaDescription: metaDescription || "",
+                tags: tags || "",
+                author: author || "",
+                aktif: aktif ?? true,
             },
         })
 
         return NextResponse.json(berita)
-    } catch (error: any) {
+    } catch (error) {
         console.error("Error updating berita:", error)
-        if (error.code === "P2025") {
-            return NextResponse.json({ error: "Berita tidak ditemukan" }, { status: 404 })
-        }
-        if (error.code === "P2002") {
-            return NextResponse.json({ error: "Slug sudah digunakan" }, { status: 400 })
-        }
-        return NextResponse.json({ error: "Failed to update berita" }, { status: 500 })
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 })
     }
 }
 
-// DELETE berita
-export async function DELETE(req: NextRequest) {
+export async function DELETE(request: NextRequest) {
     try {
-        const { searchParams } = new URL(req.url)
+        const user = verifyToken(request)
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+
+        const { searchParams } = new URL(request.url)
         const id = searchParams.get("id")
 
         if (!id) {
-            return NextResponse.json({ error: "ID is required" }, { status: 400 })
+            return NextResponse.json({ error: "ID berita harus disediakan" }, { status: 400 })
         }
 
         await prisma.berita.delete({
             where: { id },
         })
 
-        return NextResponse.json({ message: "Berita deleted successfully" })
-    } catch (error: any) {
+        return NextResponse.json({ message: "Berita berhasil dihapus" })
+    } catch (error) {
         console.error("Error deleting berita:", error)
-        if (error.code === "P2025") {
-            return NextResponse.json({ error: "Berita tidak ditemukan" }, { status: 404 })
-        }
-        return NextResponse.json({ error: "Failed to delete berita" }, { status: 500 })
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 })
     }
 }

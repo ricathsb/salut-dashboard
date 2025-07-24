@@ -4,9 +4,23 @@
 
 import type React from "react"
 import { useEffect, useState } from "react"
-import { Newspaper, Upload, Edit, Eye, EyeOff, RefreshCw, Trash2, Plus, Calendar, Link, Search } from "lucide-react"
+import {
+    Newspaper,
+    Upload,
+    Edit,
+    Eye,
+    EyeOff,
+    RefreshCw,
+    Trash2,
+    Plus,
+    Calendar,
+    Link,
+    Search,
+    FileText,
+    Globe,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,6 +30,9 @@ import { toast } from "@/hooks/use-toast"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import TiptapEditor from "@/components/tiptap-editor"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Berita {
     id: string
@@ -24,6 +41,12 @@ interface Berita {
     gambar: string
     slug: string
     linkUrl: string | null
+    jenis: "internal" | "eksternal"
+    excerpt?: string
+    metaTitle?: string
+    metaDescription?: string
+    tags?: string
+    author?: string
     tanggal: string
     aktif: boolean
     createdAt: string
@@ -38,14 +61,23 @@ function BeritaPage() {
     const [uploading, setUploading] = useState(false)
     const [editingBerita, setEditingBerita] = useState<Berita | null>(null)
     const [searchTerm, setSearchTerm] = useState("")
+    const [activeTab, setActiveTab] = useState("semua")
+    const [jenisBerita, setJenisBerita] = useState<"internal" | "eksternal">("eksternal")
 
     const [formData, setFormData] = useState({
         id: "",
         judul: "",
         konten: "",
+        kontenHtml: "",
         gambar: "",
         slug: "",
         linkUrl: "",
+        jenis: "eksternal" as "internal" | "eksternal",
+        excerpt: "",
+        metaTitle: "",
+        metaDescription: "",
+        tags: "",
+        author: "",
         aktif: true,
     })
 
@@ -76,7 +108,6 @@ function BeritaPage() {
         const file = e.target.files?.[0]
         if (!file) return
 
-        // Validate file type
         if (!file.type.startsWith("image/")) {
             toast({
                 title: "Error",
@@ -86,7 +117,6 @@ function BeritaPage() {
             return
         }
 
-        // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             toast({
                 title: "Error",
@@ -132,9 +162,9 @@ function BeritaPage() {
     const generateSlug = (title: string) => {
         return title
             .toLowerCase()
-            .replace(/[^\w\s-]/g, "") // Remove special characters
-            .replace(/\s+/g, "-") // Replace spaces with hyphens
-            .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+            .replace(/[^\w\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-")
     }
 
     const handleJudulChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,6 +173,7 @@ function BeritaPage() {
             ...prev,
             judul,
             slug: generateSlug(judul),
+            metaTitle: judul,
         }))
     }
 
@@ -154,12 +185,17 @@ function BeritaPage() {
             const url = "/api/berita"
             const method = editingBerita ? "PUT" : "POST"
 
+            const payload = {
+                ...formData,
+                ...(jenisBerita === "internal" && { kontenHtml: formData.kontenHtml }),
+            }
+
             const response = await fetch(url, {
                 method,
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             })
 
             if (!response.ok) {
@@ -188,13 +224,21 @@ function BeritaPage() {
 
     const handleEdit = (item: Berita) => {
         setEditingBerita(item)
+        setJenisBerita(item.jenis)
         setFormData({
             id: item.id,
             judul: item.judul,
-            konten: item.konten,
+            konten: item.jenis === "eksternal" ? item.konten : "",
+            kontenHtml: item.jenis === "internal" ? item.konten : "",
             gambar: item.gambar,
             slug: item.slug,
             linkUrl: item.linkUrl || "",
+            jenis: item.jenis,
+            excerpt: item.excerpt || "",
+            metaTitle: item.metaTitle || "",
+            metaDescription: item.metaDescription || "",
+            tags: item.tags || "",
+            author: item.author || "",
             aktif: item.aktif,
         })
         setDialogOpen(true)
@@ -265,12 +309,20 @@ function BeritaPage() {
             id: "",
             judul: "",
             konten: "",
+            kontenHtml: "",
             gambar: "",
             slug: "",
             linkUrl: "",
+            jenis: "eksternal",
+            excerpt: "",
+            metaTitle: "",
+            metaDescription: "",
+            tags: "",
+            author: "",
             aktif: true,
         })
         setEditingBerita(null)
+        setJenisBerita("eksternal")
     }
 
     const handleDialogClose = () => {
@@ -286,7 +338,17 @@ function BeritaPage() {
         })
     }
 
-    const filteredBerita = berita.filter((item) => item.judul.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredBerita = berita.filter((item) => {
+        const matchesSearch = item.judul.toLowerCase().includes(searchTerm.toLowerCase())
+        const matchesTab = activeTab === "semua" || item.jenis === activeTab
+        return matchesSearch && matchesTab
+    })
+
+    const getJenisBadge = (jenis: string) => {
+        return jenis === "internal"
+            ? "bg-blue-100 text-blue-800 border-blue-200"
+            : "bg-green-100 text-green-800 border-green-200"
+    }
 
     if (loading) {
         return (
@@ -312,7 +374,7 @@ function BeritaPage() {
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">Kelola Berita</h1>
-                            <p className="text-gray-600">Manajemen berita dan pengumuman website</p>
+                            <p className="text-gray-600">Manajemen berita internal dan eksternal dengan Tiptap Editor</p>
                         </div>
                     </div>
 
@@ -323,59 +385,201 @@ function BeritaPage() {
                                 Tambah Berita
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-4xl bg-white mx-4 rounded-xl max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="max-w-6xl bg-white mx-4 rounded-xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle className="text-gray-900">
                                     {editingBerita ? "Edit Berita" : "Tambah Berita Baru"}
                                 </DialogTitle>
                             </DialogHeader>
                             <form onSubmit={handleSubmit} className="space-y-4">
+                                {/* Pilih Jenis Berita */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="judul" className="text-gray-700">
-                                        Judul Berita
-                                    </Label>
-                                    <Input
-                                        id="judul"
-                                        value={formData.judul}
-                                        onChange={handleJudulChange}
-                                        placeholder="Masukkan judul berita"
-                                        required
-                                        className="bg-white border-gray-300 text-gray-900"
-                                    />
+                                    <Label className="text-gray-700">Jenis Berita</Label>
+                                    <Select
+                                        value={formData.jenis}
+                                        onValueChange={(value: "internal" | "eksternal") => {
+                                            setFormData({ ...formData, jenis: value })
+                                            setJenisBerita(value)
+                                        }}
+                                    >
+                                        <SelectTrigger className="bg-white border-gray-300">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white">
+                                            <SelectItem value="eksternal">
+                                                <div className="flex items-center gap-2">
+                                                    <Globe className="h-4 w-4" />
+                                                    Berita Eksternal (Link ke website lain)
+                                                </div>
+                                            </SelectItem>
+                                            <SelectItem value="internal">
+                                                <div className="flex items-center gap-2">
+                                                    <FileText className="h-4 w-4" />
+                                                    Berita Internal (Artikel lengkap)
+                                                </div>
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="slug" className="text-gray-700">
-                                        Slug URL
-                                    </Label>
-                                    <Input
-                                        id="slug"
-                                        value={formData.slug}
-                                        onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                        placeholder="judul-berita-dalam-format-url"
-                                        required
-                                        className="bg-white border-gray-300 text-gray-900"
-                                    />
-                                    <p className="text-xs text-gray-500">
-                                        Slug akan otomatis dibuat dari judul, tapi bisa diubah jika diperlukan
-                                    </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="judul" className="text-gray-700">
+                                            Judul Berita
+                                        </Label>
+                                        <Input
+                                            id="judul"
+                                            value={formData.judul}
+                                            onChange={handleJudulChange}
+                                            placeholder="Masukkan judul berita"
+                                            required
+                                            className="bg-white border-gray-300 text-gray-900"
+                                        />
+                                    </div>
+
+                                    {jenisBerita === "internal" && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="slug" className="text-gray-700">
+                                                Slug URL
+                                            </Label>
+                                            <Input
+                                                id="slug"
+                                                value={formData.slug}
+                                                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                                                placeholder="judul-berita-dalam-format-url"
+                                                required
+                                                className="bg-white border-gray-300 text-gray-900"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="konten" className="text-gray-700">
-                                        Konten Berita
-                                    </Label>
-                                    <Textarea
-                                        id="konten"
-                                        value={formData.konten}
-                                        onChange={(e) => setFormData({ ...formData, konten: e.target.value })}
-                                        placeholder="Tulis konten berita di sini..."
-                                        required
-                                        rows={6}
-                                        className="bg-white border-gray-300 text-gray-900 resize-y"
-                                    />
-                                </div>
+                                {/* Konten berdasarkan jenis */}
+                                {jenisBerita === "internal" ? (
+                                    <>
+                                        <div className="space-y-2">
+                                            <Label className="text-gray-700">Konten Berita (Rich Text Editor)</Label>
+                                            <TiptapEditor
+                                                value={formData.kontenHtml}
+                                                onChange={(content) => setFormData({ ...formData, kontenHtml: content })}
+                                                height={500}
+                                                placeholder="Tulis konten berita lengkap di sini..."
+                                            />
+                                        </div>
 
+                                        <div className="space-y-2">
+                                            <Label htmlFor="excerpt" className="text-gray-700">
+                                                Ringkasan/Excerpt
+                                            </Label>
+                                            <Textarea
+                                                id="excerpt"
+                                                value={formData.excerpt}
+                                                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                                                placeholder="Ringkasan singkat untuk preview..."
+                                                rows={3}
+                                                className="bg-white border-gray-300 text-gray-900"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="author" className="text-gray-700">
+                                                    Penulis
+                                                </Label>
+                                                <Input
+                                                    id="author"
+                                                    value={formData.author}
+                                                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                                                    placeholder="Nama penulis"
+                                                    className="bg-white border-gray-300 text-gray-900"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="tags" className="text-gray-700">
+                                                    Tags (pisahkan dengan koma)
+                                                </Label>
+                                                <Input
+                                                    id="tags"
+                                                    value={formData.tags}
+                                                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                                                    placeholder="teknologi, pendidikan, beasiswa"
+                                                    className="bg-white border-gray-300 text-gray-900"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* SEO Fields */}
+                                        <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                                            <h3 className="font-semibold text-gray-900">SEO Settings</h3>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="metaTitle" className="text-gray-700">
+                                                    Meta Title
+                                                </Label>
+                                                <Input
+                                                    id="metaTitle"
+                                                    value={formData.metaTitle}
+                                                    onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
+                                                    placeholder="Judul untuk SEO (max 60 karakter)"
+                                                    maxLength={60}
+                                                    className="bg-white border-gray-300 text-gray-900"
+                                                />
+                                                <p className="text-xs text-gray-500">{formData.metaTitle.length}/60 karakter</p>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="metaDescription" className="text-gray-700">
+                                                    Meta Description
+                                                </Label>
+                                                <Textarea
+                                                    id="metaDescription"
+                                                    value={formData.metaDescription}
+                                                    onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
+                                                    placeholder="Deskripsi untuk SEO (max 160 karakter)"
+                                                    maxLength={160}
+                                                    rows={3}
+                                                    className="bg-white border-gray-300 text-gray-900"
+                                                />
+                                                <p className="text-xs text-gray-500">{formData.metaDescription.length}/160 karakter</p>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="konten" className="text-gray-700">
+                                                Ringkasan Berita
+                                            </Label>
+                                            <Textarea
+                                                id="konten"
+                                                value={formData.konten}
+                                                onChange={(e) => setFormData({ ...formData, konten: e.target.value })}
+                                                placeholder="Tulis ringkasan berita di sini..."
+                                                required
+                                                rows={6}
+                                                className="bg-white border-gray-300 text-gray-900 resize-y"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="linkUrl" className="text-gray-700">
+                                                Link URL Berita
+                                            </Label>
+                                            <Input
+                                                id="linkUrl"
+                                                type="url"
+                                                value={formData.linkUrl}
+                                                onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                                                placeholder="https://www.ut.ac.id/berita/..."
+                                                required={jenisBerita === "eksternal"}
+                                                className="bg-white border-gray-300 text-gray-900"
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Upload Gambar */}
                                 <div className="space-y-2">
                                     <Label htmlFor="image" className="text-gray-700">
                                         Upload Gambar Berita
@@ -412,23 +616,6 @@ function BeritaPage() {
                                             />
                                         </div>
                                     )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="linkUrl" className="text-gray-700">
-                                        Link URL (Opsional)
-                                    </Label>
-                                    <Input
-                                        id="linkUrl"
-                                        type="url"
-                                        value={formData.linkUrl}
-                                        onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                                        placeholder="https://www.ut.ac.id/"
-                                        className="bg-white border-gray-300 text-gray-900"
-                                    />
-                                    <p className="text-xs text-gray-500">
-                                        Link untuk tombol "Baca Selengkapnya" (kosongkan jika tidak diperlukan)
-                                    </p>
                                 </div>
 
                                 <div className="flex items-center space-x-2">
@@ -472,7 +659,7 @@ function BeritaPage() {
                 </div>
 
                 {/* Statistics */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <Card className="card-solid">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
@@ -489,10 +676,12 @@ function BeritaPage() {
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-gray-600">Berita Aktif</p>
-                                    <p className="text-3xl font-bold text-green-600">{berita.filter((b) => b.aktif).length}</p>
+                                    <p className="text-sm font-medium text-gray-600">Berita Internal</p>
+                                    <p className="text-3xl font-bold text-blue-600">
+                                        {berita.filter((b) => b.jenis === "internal").length}
+                                    </p>
                                 </div>
-                                <Eye className="h-8 w-8 text-green-600" />
+                                <FileText className="h-8 w-8 text-blue-600" />
                             </div>
                         </CardContent>
                     </Card>
@@ -501,35 +690,53 @@ function BeritaPage() {
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-gray-600">Berita Nonaktif</p>
-                                    <p className="text-3xl font-bold text-red-600">{berita.filter((b) => !b.aktif).length}</p>
+                                    <p className="text-sm font-medium text-gray-600">Berita Eksternal</p>
+                                    <p className="text-3xl font-bold text-green-600">
+                                        {berita.filter((b) => b.jenis === "eksternal").length}
+                                    </p>
                                 </div>
-                                <EyeOff className="h-8 w-8 text-red-600" />
+                                <Globe className="h-8 w-8 text-green-600" />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="card-solid">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Berita Aktif</p>
+                                    <p className="text-3xl font-bold text-emerald-600">{berita.filter((b) => b.aktif).length}</p>
+                                </div>
+                                <Eye className="h-8 w-8 text-emerald-600" />
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Search */}
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <Input
-                        placeholder="Cari berita berdasarkan judul..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-white border-gray-300"
-                    />
-                </div>
-
-                {/* Data Table */}
+                {/* Tabs dan Search */}
                 <Card className="card-solid">
-                    <CardHeader>
-                        <CardTitle className="text-gray-900 flex items-center gap-2">
-                            <Newspaper className="h-5 w-5 text-orange-600" />
-                            Daftar Berita
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-6">
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-6">
+                            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-auto">
+                                <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                                    <TabsTrigger value="semua">Semua</TabsTrigger>
+                                    <TabsTrigger value="internal">Internal</TabsTrigger>
+                                    <TabsTrigger value="eksternal">Eksternal</TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+
+                            <div className="relative w-full sm:w-80">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <Input
+                                    placeholder="Cari berita berdasarkan judul..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-10 bg-white border-gray-300"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Data Table */}
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
@@ -537,6 +744,7 @@ function BeritaPage() {
                                         <TableHead className="text-gray-700 w-12">No</TableHead>
                                         <TableHead className="text-gray-700">Gambar</TableHead>
                                         <TableHead className="text-gray-700">Judul</TableHead>
+                                        <TableHead className="text-gray-700">Jenis</TableHead>
                                         <TableHead className="text-gray-700">Slug</TableHead>
                                         <TableHead className="text-gray-700">Tanggal</TableHead>
                                         <TableHead className="text-gray-700">Status</TableHead>
@@ -560,24 +768,30 @@ function BeritaPage() {
                                             <TableCell>
                                                 <div>
                                                     <div className="font-medium text-gray-900 line-clamp-2">{item.judul}</div>
-                                                    <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                                                        {item.linkUrl && (
-                                                            <>
-                                                                <Link className="h-3 w-3" />
-                                                                <a
-                                                                    href={item.linkUrl}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:underline"
-                                                                >
-                                                                    Link URL
-                                                                </a>
-                                                            </>
-                                                        )}
-                                                    </div>
+                                                    {item.jenis === "eksternal" && item.linkUrl && (
+                                                        <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                                            <Link className="h-3 w-3" />
+                                                            <a
+                                                                href={item.linkUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-blue-600 hover:underline"
+                                                            >
+                                                                Link URL
+                                                            </a>
+                                                        </div>
+                                                    )}
+                                                    {item.jenis === "internal" && item.author && (
+                                                        <div className="text-xs text-gray-500 mt-1">Penulis: {item.author}</div>
+                                                    )}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-gray-600 font-mono text-xs">{item.slug}</TableCell>
+                                            <TableCell>
+                                                <Badge className={`${getJenisBadge(item.jenis)}`}>
+                                                    {item.jenis === "internal" ? "Internal" : "Eksternal"}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-gray-600 font-mono text-xs">{item.slug || "-"}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-1 text-gray-600">
                                                     <Calendar className="h-3 w-3" />
