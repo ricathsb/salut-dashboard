@@ -21,8 +21,6 @@ function verifyToken(request: NextRequest) {
     }
 }
 
-
-
 export async function GET(request: NextRequest) {
     try {
         const user = verifyToken(request)
@@ -64,6 +62,7 @@ export async function POST(request: NextRequest) {
             metaDescription,
             tags,
             author,
+            tampilDiCarousel,
             aktif,
         } = body
 
@@ -115,6 +114,7 @@ export async function POST(request: NextRequest) {
                 tags: tags || "",
                 author: author || "",
                 tanggal: new Date().toISOString(),
+                tampilDiCarousel: tampilDiCarousel ?? false,
                 aktif: aktif ?? true,
             },
         })
@@ -148,6 +148,7 @@ export async function PUT(request: NextRequest) {
             metaDescription,
             tags,
             author,
+            tampilDiCarousel,
             aktif,
         } = body
 
@@ -196,6 +197,7 @@ export async function PUT(request: NextRequest) {
                 metaDescription: metaDescription || "",
                 tags: tags || "",
                 author: author || "",
+                tampilDiCarousel: tampilDiCarousel ?? false,
                 aktif: aktif ?? true,
             },
         })

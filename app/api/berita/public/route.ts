@@ -4,66 +4,105 @@ import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
-// GET - Fetch public berita (no authentication required)
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
         const slug = searchParams.get("slug")
+        const carousel = searchParams.get("carousel")
         const limit = searchParams.get("limit")
-        const jenis = searchParams.get("jenis")
+        const page = searchParams.get("page")
+        const tag = searchParams.get("tag")
 
+        // If requesting carousel items
+        if (carousel === "true") {
+            const berita = await prisma.berita.findMany({
+                where: {
+                    aktif: true,
+                    tampilDiCarousel: true,
+                },
+                orderBy: {
+                    createdAt: "desc",
+                },
+                take: limit ? Number.parseInt(limit) : 10,
+            })
+
+            // Convert HTML content to plain text for carousel display
+            const processedBerita = berita.map((item) => ({
+                ...item,
+                konten: item.jenis === "internal" ? stripHtml(item.konten).substring(0, 200) + "..." : item.konten,
+            }))
+
+            return NextResponse.json(processedBerita)
+        }
+
+        // If requesting specific article by slug
         if (slug) {
-            // Get single berita by slug
             const berita = await prisma.berita.findFirst({
                 where: {
                     slug: slug,
                     aktif: true,
-                    jenis: "internal", // Only internal berita have slugs
                 },
             })
 
             if (!berita) {
-                return NextResponse.json({ error: "Berita not found" }, { status: 404 })
+                return NextResponse.json({ error: "Berita tidak ditemukan" }, { status: 404 })
             }
 
             return NextResponse.json(berita)
-        } else {
-            // Get list of public berita
-            const where: any = {
-                aktif: true,
-            }
+        }
 
-            if (jenis) {
-                where.jenis = jenis
-            }
+        // General public listing with pagination and filtering
+        const pageNumber = page ? Number.parseInt(page) : 1
+        const pageSize = limit ? Number.parseInt(limit) : 10
+        const skip = (pageNumber - 1) * pageSize
 
-            const berita = await prisma.berita.findMany({
+        const where: any = {
+            aktif: true,
+        }
+
+        if (tag) {
+            where.tags = {
+                contains: tag,
+            }
+        }
+
+        const [berita, total] = await Promise.all([
+            prisma.berita.findMany({
                 where,
                 orderBy: {
                     createdAt: "desc",
                 },
-                take: limit ? Number.parseInt(limit) : undefined,
-                select: {
-                    id: true,
-                    judul: true,
-                    konten: true,
-                    gambar: true,
-                    slug: true,
-                    linkUrl: true,
-                    jenis: true,
-                    excerpt: true,
-                    author: true,
-                    tags: true,
-                    tanggal: true,
-                    createdAt: true,
-                    updatedAt: true,
-                },
-            })
+                skip,
+                take: pageSize,
+            }),
+            prisma.berita.count({ where }),
+        ])
 
-            return NextResponse.json(berita)
-        }
+        return NextResponse.json({
+            data: berita,
+            pagination: {
+                page: pageNumber,
+                limit: pageSize,
+                total,
+                totalPages: Math.ceil(total / pageSize),
+            },
+        })
     } catch (error) {
         console.error("Error fetching public berita:", error)
         return NextResponse.json({ error: "Internal server error" }, { status: 500 })
     }
+}
+
+// Helper function to strip HTML tags
+function stripHtml(html: string): string {
+    return html
+        .replace(/<[^>]*>/g, "") // Remove HTML tags
+        .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
+        .replace(/&amp;/g, "&") // Replace &amp; with &
+        .replace(/&lt;/g, "<") // Replace &lt; with <
+        .replace(/&gt;/g, ">") // Replace &gt; with >
+        .replace(/&quot;/g, '"') // Replace &quot; with "
+        .replace(/&#39;/g, "'") // Replace &#39; with '
+        .replace(/\s+/g, " ") // Replace multiple spaces with single space
+        .trim()
 }

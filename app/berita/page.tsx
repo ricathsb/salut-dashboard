@@ -18,6 +18,9 @@ import {
     Search,
     FileText,
     Globe,
+    TagIcon,
+    X,
+    Monitor,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -48,13 +51,23 @@ interface Berita {
     tags?: string
     author?: string
     tanggal: string
+    tampilDiCarousel: boolean
     aktif: boolean
     createdAt: string
     updatedAt: string
 }
 
+interface Tag {
+    id: string
+    nama: string
+    slug: string
+    warna: string
+    aktif: boolean
+}
+
 function BeritaPage() {
     const [berita, setBerita] = useState<Berita[]>([])
+    const [tags, setTags] = useState<Tag[]>([])
     const [loading, setLoading] = useState(true)
     const [dialogOpen, setDialogOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -63,6 +76,9 @@ function BeritaPage() {
     const [searchTerm, setSearchTerm] = useState("")
     const [activeTab, setActiveTab] = useState("semua")
     const [jenisBerita, setJenisBerita] = useState<"internal" | "eksternal">("eksternal")
+    const [selectedTags, setSelectedTags] = useState<string[]>([])
+    const [newTagName, setNewTagName] = useState("")
+    const [showNewTagInput, setShowNewTagInput] = useState(false)
 
     const [formData, setFormData] = useState({
         id: "",
@@ -78,11 +94,13 @@ function BeritaPage() {
         metaDescription: "",
         tags: "",
         author: "",
+        tampilDiCarousel: false,
         aktif: true,
     })
 
     useEffect(() => {
         fetchBerita()
+        fetchTags()
     }, [])
 
     const fetchBerita = async () => {
@@ -101,6 +119,18 @@ function BeritaPage() {
             })
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchTags = async () => {
+        try {
+            const response = await fetch("/api/tags")
+            if (response.ok) {
+                const data = await response.json()
+                setTags(data)
+            }
+        } catch (error) {
+            console.error("Error fetching tags:", error)
         }
     }
 
@@ -177,6 +207,59 @@ function BeritaPage() {
         }))
     }
 
+    const handleTagSelect = (tagName: string) => {
+        if (!selectedTags.includes(tagName)) {
+            setSelectedTags([...selectedTags, tagName])
+        }
+    }
+
+    const handleTagRemove = (tagName: string) => {
+        setSelectedTags(selectedTags.filter((tag) => tag !== tagName))
+    }
+
+    const handleCreateNewTag = async () => {
+        if (!newTagName.trim()) return
+
+        try {
+            const response = await fetch("/api/tags", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    nama: newTagName.trim(),
+                    warna: "#3b82f6",
+                }),
+            })
+
+            if (response.ok) {
+                const newTag = await response.json()
+                setTags([...tags, newTag])
+                setSelectedTags([...selectedTags, newTag.nama])
+                setNewTagName("")
+                setShowNewTagInput(false)
+                toast({
+                    title: "Berhasil",
+                    description: "Tag baru berhasil dibuat",
+                })
+            } else {
+                const error = await response.json()
+                toast({
+                    title: "Error",
+                    description: error.error || "Gagal membuat tag",
+                    variant: "destructive",
+                })
+            }
+        } catch (error) {
+            console.error("Error creating tag:", error)
+            toast({
+                title: "Error",
+                description: "Gagal membuat tag",
+                variant: "destructive",
+            })
+        }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
@@ -187,6 +270,7 @@ function BeritaPage() {
 
             const payload = {
                 ...formData,
+                tags: selectedTags.join(", "),
                 ...(jenisBerita === "internal" && { kontenHtml: formData.kontenHtml }),
             }
 
@@ -225,6 +309,7 @@ function BeritaPage() {
     const handleEdit = (item: Berita) => {
         setEditingBerita(item)
         setJenisBerita(item.jenis)
+        setSelectedTags(item.tags ? item.tags.split(", ").filter((tag) => tag.trim()) : [])
         setFormData({
             id: item.id,
             judul: item.judul,
@@ -239,6 +324,7 @@ function BeritaPage() {
             metaDescription: item.metaDescription || "",
             tags: item.tags || "",
             author: item.author || "",
+            tampilDiCarousel: item.tampilDiCarousel,
             aktif: item.aktif,
         })
         setDialogOpen(true)
@@ -319,10 +405,14 @@ function BeritaPage() {
             metaDescription: "",
             tags: "",
             author: "",
+            tampilDiCarousel: false,
             aktif: true,
         })
         setEditingBerita(null)
         setJenisBerita("eksternal")
+        setSelectedTags([])
+        setNewTagName("")
+        setShowNewTagInput(false)
     }
 
     const handleDialogClose = () => {
@@ -348,6 +438,11 @@ function BeritaPage() {
         return jenis === "internal"
             ? "bg-blue-100 text-blue-800 border-blue-200"
             : "bg-green-100 text-green-800 border-green-200"
+    }
+
+    const getTagColor = (tagName: string) => {
+        const tag = tags.find((t) => t.nama === tagName)
+        return tag?.warna || "#3b82f6"
     }
 
     if (loading) {
@@ -454,6 +549,105 @@ function BeritaPage() {
                                     )}
                                 </div>
 
+                                {/* Tags Section */}
+                                <div className="space-y-2">
+                                    <Label className="text-gray-700">Tags</Label>
+
+                                    {/* Selected Tags */}
+                                    {selectedTags.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {selectedTags.map((tagName) => (
+                                                <Badge
+                                                    key={tagName}
+                                                    className="flex items-center gap-1 px-2 py-1"
+                                                    style={{
+                                                        backgroundColor: getTagColor(tagName) + "20",
+                                                        color: getTagColor(tagName),
+                                                        border: `1px solid ${getTagColor(tagName)}40`,
+                                                    }}
+                                                >
+                                                    <TagIcon className="h-3 w-3" />
+                                                    {tagName}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleTagRemove(tagName)}
+                                                        className="ml-1 hover:bg-red-100 rounded-full p-0.5"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Available Tags */}
+                                    <div className="border border-gray-300 rounded-lg p-3 bg-gray-50">
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {tags
+                                                .filter((tag) => !selectedTags.includes(tag.nama))
+                                                .map((tag) => (
+                                                    <button
+                                                        key={tag.id}
+                                                        type="button"
+                                                        onClick={() => handleTagSelect(tag.nama)}
+                                                        className="px-2 py-1 text-xs rounded-full border hover:bg-gray-100 transition-colors"
+                                                        style={{
+                                                            borderColor: tag.warna + "40",
+                                                            color: tag.warna,
+                                                            backgroundColor: tag.warna + "10",
+                                                        }}
+                                                    >
+                                                        + {tag.nama}
+                                                    </button>
+                                                ))}
+                                        </div>
+
+                                        {/* Add New Tag */}
+                                        {showNewTagInput ? (
+                                            <div className="flex gap-2 mt-2">
+                                                <Input
+                                                    value={newTagName}
+                                                    onChange={(e) => setNewTagName(e.target.value)}
+                                                    placeholder="Nama tag baru"
+                                                    className="flex-1 h-8 text-sm"
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === "Enter") {
+                                                            e.preventDefault()
+                                                            handleCreateNewTag()
+                                                        }
+                                                    }}
+                                                />
+                                                <Button type="button" size="sm" onClick={handleCreateNewTag} className="h-8 px-3 text-xs">
+                                                    Tambah
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setShowNewTagInput(false)
+                                                        setNewTagName("")
+                                                    }}
+                                                    className="h-8 px-3 text-xs"
+                                                >
+                                                    Batal
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setShowNewTagInput(true)}
+                                                className="h-8 px-3 text-xs text-gray-600 border-dashed"
+                                            >
+                                                <Plus className="h-3 w-3 mr-1" />
+                                                Buat Tag Baru
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+
                                 {/* Konten berdasarkan jenis */}
                                 {jenisBerita === "internal" ? (
                                     <>
@@ -491,19 +685,6 @@ function BeritaPage() {
                                                     value={formData.author}
                                                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                                                     placeholder="Nama penulis"
-                                                    className="bg-white border-gray-300 text-gray-900"
-                                                />
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label htmlFor="tags" className="text-gray-700">
-                                                    Tags (pisahkan dengan koma)
-                                                </Label>
-                                                <Input
-                                                    id="tags"
-                                                    value={formData.tags}
-                                                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                                    placeholder="teknologi, pendidikan, beasiswa"
                                                     className="bg-white border-gray-300 text-gray-900"
                                                 />
                                             </div>
@@ -618,15 +799,32 @@ function BeritaPage() {
                                     )}
                                 </div>
 
-                                <div className="flex items-center space-x-2">
-                                    <Switch
-                                        id="aktif"
-                                        checked={formData.aktif}
-                                        onCheckedChange={(checked) => setFormData({ ...formData, aktif: checked })}
-                                    />
-                                    <Label htmlFor="aktif" className="text-gray-700">
-                                        Aktif (Tampilkan di website)
-                                    </Label>
+                                {/* Settings */}
+                                <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                                    <h3 className="font-semibold text-gray-900">Pengaturan Tampilan</h3>
+
+                                    <div className="flex items-center space-x-2">
+                                        <Switch
+                                            id="tampilDiCarousel"
+                                            checked={formData.tampilDiCarousel}
+                                            onCheckedChange={(checked) => setFormData({ ...formData, tampilDiCarousel: checked })}
+                                        />
+                                        <Label htmlFor="tampilDiCarousel" className="text-gray-700 flex items-center gap-2">
+                                            <Monitor className="h-4 w-4" />
+                                            Tampilkan di Carousel (Halaman Utama)
+                                        </Label>
+                                    </div>
+
+                                    <div className="flex items-center space-x-2">
+                                        <Switch
+                                            id="aktif"
+                                            checked={formData.aktif}
+                                            onCheckedChange={(checked) => setFormData({ ...formData, aktif: checked })}
+                                        />
+                                        <Label htmlFor="aktif" className="text-gray-700">
+                                            Aktif (Tampilkan di website)
+                                        </Label>
+                                    </div>
                                 </div>
 
                                 <div className="flex gap-2 pt-4">
@@ -659,7 +857,7 @@ function BeritaPage() {
                 </div>
 
                 {/* Statistics */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                     <Card className="card-solid">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
@@ -696,6 +894,20 @@ function BeritaPage() {
                                     </p>
                                 </div>
                                 <Globe className="h-8 w-8 text-green-600" />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="card-solid">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Di Carousel</p>
+                                    <p className="text-3xl font-bold text-purple-600">
+                                        {berita.filter((b) => b.tampilDiCarousel).length}
+                                    </p>
+                                </div>
+                                <Monitor className="h-8 w-8 text-purple-600" />
                             </div>
                         </CardContent>
                     </Card>
@@ -745,7 +957,8 @@ function BeritaPage() {
                                         <TableHead className="text-gray-700">Gambar</TableHead>
                                         <TableHead className="text-gray-700">Judul</TableHead>
                                         <TableHead className="text-gray-700">Jenis</TableHead>
-                                        <TableHead className="text-gray-700">Slug</TableHead>
+                                        <TableHead className="text-gray-700">Tags</TableHead>
+                                        <TableHead className="text-gray-700">Carousel</TableHead>
                                         <TableHead className="text-gray-700">Tanggal</TableHead>
                                         <TableHead className="text-gray-700">Status</TableHead>
                                         <TableHead className="text-center text-gray-700">Aksi</TableHead>
@@ -791,7 +1004,37 @@ function BeritaPage() {
                                                     {item.jenis === "internal" ? "Internal" : "Eksternal"}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-gray-600 font-mono text-xs">{item.slug || "-"}</TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {item.tags &&
+                                                        item.tags
+                                                            .split(", ")
+                                                            .filter((tag) => tag.trim())
+                                                            .map((tagName, idx) => (
+                                                                <Badge
+                                                                    key={idx}
+                                                                    className="text-xs px-1 py-0.5"
+                                                                    style={{
+                                                                        backgroundColor: getTagColor(tagName) + "20",
+                                                                        color: getTagColor(tagName),
+                                                                        border: `1px solid ${getTagColor(tagName)}40`,
+                                                                    }}
+                                                                >
+                                                                    {tagName}
+                                                                </Badge>
+                                                            ))}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    className={`${item.tampilDiCarousel
+                                                            ? "bg-purple-100 text-purple-800 border-purple-200"
+                                                            : "bg-gray-100 text-gray-800 border-gray-200"
+                                                        }`}
+                                                >
+                                                    {item.tampilDiCarousel ? "Ya" : "Tidak"}
+                                                </Badge>
+                                            </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-1 text-gray-600">
                                                     <Calendar className="h-3 w-3" />

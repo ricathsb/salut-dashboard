@@ -120,20 +120,30 @@ model brosur {
 model Berita {
   id              String   @id @default(cuid())
   judul           String
-  slug            String   @unique
   konten          String
   gambar          String
+  slug            String   @unique
   linkUrl         String?
-  jenis           String   // "internal" or "eksternal"
+  jenis           String   // "internal" atau "eksternal"
   excerpt         String?
   metaTitle       String?
   metaDescription String?
   tags            String?
   author          String?
   tanggal         String
+  tampilDiCarousel Boolean  @default(false)
   aktif           Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  @@map("berita")
+}
 
-@@map("berita")
+model Tag {
+  id        String   @id @default(cuid())
+  nama      String   @unique
+  slug      String   @unique
+  warna     String   @default("#3b82f6")
+  aktif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
