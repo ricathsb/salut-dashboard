@@ -214,6 +214,7 @@ function BeritaPage() {
     }
 
     const handleTagRemove = (tagName: string) => {
+        selectedTags.filter((tag) => tag !== tagName)
         setSelectedTags(selectedTags.filter((tag) => tag !== tagName))
     }
 
@@ -1028,8 +1029,8 @@ function BeritaPage() {
                                             <TableCell>
                                                 <Badge
                                                     className={`${item.tampilDiCarousel
-                                                        ? "bg-purple-100 text-purple-800 border-purple-200"
-                                                        : "bg-gray-100 text-gray-800 border-gray-200"
+                                                            ? "bg-purple-100 text-purple-800 border-purple-200"
+                                                            : "bg-gray-100 text-gray-800 border-gray-200"
                                                         }`}
                                                 >
                                                     {item.tampilDiCarousel ? "Ya" : "Tidak"}
@@ -1063,8 +1064,8 @@ function BeritaPage() {
                                                         size="sm"
                                                         onClick={() => toggleStatus(item)}
                                                         className={`h-8 w-8 p-0 ${item.aktif
-                                                            ? "text-red-600 hover:text-red-700 border-red-300 hover:bg-red-50"
-                                                            : "text-green-600 hover:text-green-700 border-green-300 hover:bg-green-50"
+                                                                ? "text-red-600 hover:text-red-700 border-red-300 hover:bg-red-50"
+                                                                : "text-green-600 hover:text-green-700 border-green-300 hover:bg-green-50"
                                                             }`}
                                                     >
                                                         {item.aktif ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

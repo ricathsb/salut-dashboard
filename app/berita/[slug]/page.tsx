@@ -1,21 +1,32 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { headers } from "next/headers" // Import headers for dynamic host detection
 import BeritaDetailPageClient from "./BeritaDetailPageClient"
 
 interface BeritaDetailPageProps {
-    params: Promise<{
+    params: {
         slug: string
-    }>
+    }
 }
 
 async function getBerita(slug: string) {
     try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+        const headersList = await headers() // Await the headers() call
+        const host = headersList.get("host") || "localhost:3000" // Dapatkan host dari header, fallback ke localhost
+        // Tentukan protokol: https untuk produksi, http untuk pengembangan lokal
+        const protocol = process.env.NODE_ENV === "production" ? "https" : "http"
+        const baseUrl = `${protocol}://${host}`
+
         const response = await fetch(`${baseUrl}/api/berita/public?slug=${slug}`, {
-            cache: "no-store",
+            cache: "no-store", // Pastikan data tidak disimpan dalam cache
         })
 
         if (!response.ok) {
+            // Jika respons 404, kembalikan null agar notFound() dipanggil
+            if (response.status === 404) {
+                return null
+            }
+            console.error(`Error fetching berita: ${response.status} ${response.statusText}`)
             return null
         }
 
@@ -27,7 +38,7 @@ async function getBerita(slug: string) {
 }
 
 export async function generateMetadata({ params }: BeritaDetailPageProps): Promise<Metadata> {
-    const { slug } = await params
+    const { slug } = params
     const berita = await getBerita(slug)
 
     if (!berita) {
@@ -37,13 +48,26 @@ export async function generateMetadata({ params }: BeritaDetailPageProps): Promi
         }
     }
 
+    // Dapatkan host dan protokol lagi untuk membuat URL gambar absolut
+    const headersList = await headers() // Await the headers() call
+    const host = headersList.get("host") || "localhost:3000"
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http"
+    const currentDomain = `${protocol}://${host}`
+
+    // Buat URL gambar absolut untuk metadata Open Graph dan Twitter Card
+    const imageUrl = berita.gambar
+        ? berita.gambar.startsWith("http://") || berita.gambar.startsWith("https://")
+            ? berita.gambar // Jika sudah URL absolut
+            : `${currentDomain}${berita.gambar.startsWith("/") ? "" : "/"}${berita.gambar}` // Jika URL relatif
+        : undefined
+
     return {
         title: berita.metaTitle || berita.judul,
         description: berita.metaDescription || berita.excerpt || berita.konten.substring(0, 160),
         openGraph: {
             title: berita.metaTitle || berita.judul,
             description: berita.metaDescription || berita.excerpt || berita.konten.substring(0, 160),
-            images: berita.gambar ? [berita.gambar] : [],
+            images: imageUrl ? [imageUrl] : [],
             type: "article",
             publishedTime: berita.createdAt,
             modifiedTime: berita.updatedAt,
@@ -54,17 +78,17 @@ export async function generateMetadata({ params }: BeritaDetailPageProps): Promi
             card: "summary_large_image",
             title: berita.metaTitle || berita.judul,
             description: berita.metaDescription || berita.excerpt || berita.konten.substring(0, 160),
-            images: berita.gambar ? [berita.gambar] : [],
+            images: imageUrl ? [imageUrl] : [],
         },
     }
 }
 
 export default async function BeritaDetailPage({ params }: BeritaDetailPageProps) {
-    const { slug } = await params
+    const { slug } = params
     const berita = await getBerita(slug)
 
     if (!berita) {
-        notFound()
+        notFound() // Tampilkan halaman 404 jika berita tidak ditemukan
     }
 
     return <BeritaDetailPageClient berita={berita} />
