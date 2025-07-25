@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, School, BookOpen, ImageIcon, Newspaper, LogOut } from "lucide-react"
+import {Home, School, BookOpen, ImageIcon, Newspaper, LogOut, Megaphone} from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import ImageComponent from "next/image"
@@ -42,6 +42,11 @@ const menuItems = [
         title: "Brosur",
         url: "/brosur",
         icon: ImageIcon,
+    },
+    {
+        title: "Blasting",
+        url: "http://localhost:3010/blasting",
+        icon: Megaphone,
     },
 ]
 
