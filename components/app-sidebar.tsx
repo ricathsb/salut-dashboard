@@ -45,7 +45,7 @@ const menuItems = [
     },
     {
         title: "Blasting",
-        url: "http://localhost:3010/blasting",
+        url: "http://31.97.220.182t:3010/blasting",
         icon: Megaphone,
     },
 ]
