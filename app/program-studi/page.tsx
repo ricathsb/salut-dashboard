@@ -1019,7 +1019,7 @@ export default function ProgramStudiPage() {
                                             <TableCell>
                                                 <div className="flex items-center justify-center gap-2">
                                                     <Button
-                                                        variant="outline"
+                                                        variant="whiteOutline"
                                                         size="sm"
                                                         onClick={() => handleEdit(item)}
                                                         className="h-8 w-8 p-0 border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 transition-all duration-200"
@@ -1027,7 +1027,7 @@ export default function ProgramStudiPage() {
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
                                                     <Button
-                                                        variant="outline"
+                                                        variant="whiteOutline"
                                                         size="sm"
                                                         onClick={() => handleDelete(item.id, item.nama)}
                                                         className="h-8 w-8 p-0 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 transition-all duration-200"

@@ -427,7 +427,7 @@ export default function FakultasPage() {
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
                                                     <Button
-                                                        variant="outline"
+                                                        variant="whiteOutline"
                                                         size="sm"
                                                         onClick={() => handleDelete(item.id)}
                                                         className="h-8 w-8 p-0 text-red-600 hover:text-red-700 border-red-300 hover:bg-red-50"

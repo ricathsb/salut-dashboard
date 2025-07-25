@@ -487,27 +487,27 @@ export default function Home() {
                       <TableCell className="p-3 sm:p-6">
                         <div className="flex items-center justify-center gap-1 sm:gap-2">
                           <Button
-                            variant="outline"
+                            variant="whiteOutline" // Use the new darkOutline variant
                             size="sm"
                             onClick={() => handleDownload(registration.id)}
                             disabled={downloadingIds.has(registration.id)}
-                            className="h-7 w-7 sm:h-8 sm:w-8 p-0 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="h-7 w-7 sm:h-8 sm:w-8 p-0 border-blue-400 text-blue-400 hover:border-blue-500 hover:text-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {downloadingIds.has(registration.id) ? (
-                              <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                              <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-blue-400 border-t-transparent"></div>
                             ) : (
                               <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                             )}
                           </Button>
                           <Button
-                            variant="outline"
+                            variant="whiteOutline" // Use the new darkOutline variant
                             size="sm"
                             onClick={() => handleDelete(registration.id)}
                             disabled={deletingIds.has(registration.id)}
-                            className="h-7 w-7 sm:h-8 sm:w-8 p-0 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="h-7 w-7 sm:h-8 sm:w-8 p-0 border-red-400 text-red-400 hover:border-red-500 hover:text-red-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {deletingIds.has(registration.id) ? (
-                              <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                              <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-red-400 border-t-transparent"></div>
                             ) : (
                               <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             )}
